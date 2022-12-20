@@ -1,11 +1,8 @@
-{% extends "wrapper/standard_form.html" %}
+{% extends "wrapper/box_shadowed.html" %}
 
 {% block head_title %} Login {% endblock %}
 
 {% block form_content %}
-
-
-
 
     {% if form.errors %}
 
@@ -32,12 +29,14 @@
         {% endif %}
     {% endif %}
 
-    <div class="col-md-8 offset-md-2 shadow-lg p-4">
+    {% block box_shadowed_content %}
+
         <p class="display-4">Login</p>
+
         <p class="lead">Log in to configure the dashboard.</p>
+
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
-
             <div class="fieldWrapper mb-3 row">
                 {{ form.username.errors }}
                 <label for="{{ form.username.id_for_label }}" class="col-sm-2 col-form-label">{{ form.username.label }}</label>
@@ -62,11 +61,11 @@
 
             <input type="submit" value="login" class="btn btn-dark">
             <input type="hidden" name="next" value="{{ next }}">
+
         </form>
-    </div>
 
+        <p class="mt-2"><a href="{% url 'password_reset' %}">Lost password?</a></p>
 
-    {# Assumes you set up the password_reset view in your URLconf #}
-    {#            <p><a href="{% url 'password_reset' %}">Lost password?</a></p>#}
+    {% endblock %}
 
 {% endblock %}
