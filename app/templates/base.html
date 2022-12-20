@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>{% block head_title %}{% endblock %}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    {% include 'includes/head_links.html' %}
+    {% include 'includes/head_scripts.html' %}
+    {% include 'includes/head_style.html' %}
+
+    {% block head_script %}{% endblock %}
+    {% block head_link %}{% endblock %}
+
+    {% block head_style %}{% endblock %}
+    {% block head_style_cheat %}{% endblock %}
+
+</head>
+
+    <body style="min-height: 100vh; display: flex; flex-direction: column;">
+
+        {% include 'includes/navbar.html' %}
+        {% include 'includes/messages.html' %}
+        {% block body_content %}{% endblock %}
+        {% block body_js_script %}{% endblock %}
+        {% include "includes/footer.html" %}
+
+    </body>
+
+</html>

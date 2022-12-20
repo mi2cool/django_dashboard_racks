@@ -1,0 +1,72 @@
+{% extends "wrapper/standard_form.html" %}
+
+{% block head_title %} Login {% endblock %}
+
+{% block form_content %}
+
+
+
+
+    {% if form.errors %}
+
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            Your username and password didn't match. Please try again.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                Your account doesn't have access to this page. To proceed,
+                please log in with an account that has access.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% else %}
+            <p></p>
+            <div class="alert alert-primary alert-dismissible" role="alert">
+                Please login to see this page.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="col-md-8 offset-md-2 shadow-lg p-4">
+        <p class="display-4">Login</p>
+        <p class="lead">Log in to configure the dashboard.</p>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="fieldWrapper mb-3 row">
+                {{ form.username.errors }}
+                <label for="{{ form.username.id_for_label }}" class="col-sm-2 col-form-label">{{ form.username.label }}</label>
+                <div class="col-sm-5">
+                    {{ form.username }}
+                </div>
+                {% if form.username.help_text %}
+                    <p class="help">{{ form.username.help_text|safe }}</p>
+                {% endif %}
+            </div>
+
+            <div class="fieldWrapper mb-3 row">
+                {{ form.password.errors }}
+                <label for="{{ form.password.id_for_label }}" class="col-sm-2 col-form-label">{{ form.password.label }}</label>
+                <div class="col-sm-5">
+                    {{ form.password }}
+                </div>
+                {% if form.password.help_text %}
+                    <p class="help">{{ form.password.help_text|safe }}</p>
+                {% endif %}
+            </div>
+
+            <input type="submit" value="login" class="btn btn-dark">
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+    </div>
+
+
+    {# Assumes you set up the password_reset view in your URLconf #}
+    {#            <p><a href="{% url 'password_reset' %}">Lost password?</a></p>#}
+
+{% endblock %}
