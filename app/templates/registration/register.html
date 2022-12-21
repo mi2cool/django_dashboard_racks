@@ -1,0 +1,57 @@
+{% extends "wrapper/box_shadowed.html" %}
+
+{% load i18n %}
+
+{% block box_shadowed_content %}
+
+    <!--Register-->
+    <p class="display-4">Register</p>
+
+    <form method="post">
+
+        <div class="mb-3 row">
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+
+            <div class="mb-3 row">
+                <div class="col-md-6">
+                    {{ form.username.errors }}
+                    <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+                    {{ form.username }}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <div class="col-md-6">
+                    {{ form.email.errors }}
+                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                    {{ form.email }}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <div class="col-md-6">
+                    {{ form.password1.errors }}
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">{{ form.password1.label }}</label>
+                    {{ form.password1 }}
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <div class="col-md-6">
+                    {{ form.password2.errors }}
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">{{ form.password2.label }}</label>
+                    {{ form.password2 }}
+                </div>
+            </div>
+        </div>
+
+
+        {#            {{ register_form }}#}
+        <button class="btn btn-dark" type="submit" name="register_request">Register</button>
+    </form>
+    <p class="lead text-center">If you already have an account, <a href="{% url 'login' %}">login</a> instead.</p>
+
+
+{% endblock %}

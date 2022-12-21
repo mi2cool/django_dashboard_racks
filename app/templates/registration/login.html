@@ -2,7 +2,7 @@
 
 {% block head_title %} Login {% endblock %}
 
-{% block form_content %}
+{% block box_shadowed_content %}
 
     {% if form.errors %}
 
@@ -29,43 +29,42 @@
         {% endif %}
     {% endif %}
 
-    {% block box_shadowed_content %}
 
-        <p class="display-4">Login</p>
 
-        <p class="lead">Log in to configure the dashboard.</p>
+    <p class="display-4">Login</p>
 
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <div class="fieldWrapper mb-3 row">
-                {{ form.username.errors }}
-                <label for="{{ form.username.id_for_label }}" class="col-sm-2 col-form-label">{{ form.username.label }}</label>
-                <div class="col-sm-5">
-                    {{ form.username }}
-                </div>
-                {% if form.username.help_text %}
-                    <p class="help">{{ form.username.help_text|safe }}</p>
-                {% endif %}
+    <p class="lead">Log in to configure the dashboard.</p>
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="fieldWrapper mb-3 row">
+            {{ form.username.errors }}
+            <label for="{{ form.username.id_for_label }}" class="col-sm-2 col-form-label">{{ form.username.label }}</label>
+            <div class="col-sm-5">
+                {{ form.username }}
             </div>
+            {% if form.username.help_text %}
+                <p class="help">{{ form.username.help_text|safe }}</p>
+            {% endif %}
+        </div>
 
-            <div class="fieldWrapper mb-3 row">
-                {{ form.password.errors }}
-                <label for="{{ form.password.id_for_label }}" class="col-sm-2 col-form-label">{{ form.password.label }}</label>
-                <div class="col-sm-5">
-                    {{ form.password }}
-                </div>
-                {% if form.password.help_text %}
-                    <p class="help">{{ form.password.help_text|safe }}</p>
-                {% endif %}
+        <div class="fieldWrapper mb-3 row">
+            {{ form.password.errors }}
+            <label for="{{ form.password.id_for_label }}" class="col-sm-2 col-form-label">{{ form.password.label }}</label>
+            <div class="col-sm-5">
+                {{ form.password }}
             </div>
+            {% if form.password.help_text %}
+                <p class="help">{{ form.password.help_text|safe }}</p>
+            {% endif %}
+        </div>
 
-            <input type="submit" value="login" class="btn btn-dark">
-            <input type="hidden" name="next" value="{{ next }}">
+        <input type="submit" value="login" class="btn btn-dark">
+        <input type="hidden" name="next" value="{{ next }}">
 
-        </form>
+    </form>
 
-        <p class="mt-2"><a href="{% url 'password_reset' %}">Lost password?</a></p>
-
-    {% endblock %}
+    <p class="mt-2"><a href="{% url 'password_reset' %}">Lost password?</a></p>
+    <p class="mt-2"><a href="{% url 'user-register' %}">Not registered?</a></p>
 
 {% endblock %}

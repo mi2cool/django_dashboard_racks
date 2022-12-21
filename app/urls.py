@@ -6,6 +6,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('home/', views.index, name='home'),
 
+    # path('accounts/register/', views.register_request, name='user-register'),
+    path('accounts/register/', views.RegisterFormView.as_view(), name='user-register'),
     path('accounts/login/', views.CustomLoginView.as_view(), name='login'),
     path('accounts/logout/', views.logout_view, name='logout'),
     path('accounts/password_reset', views.CustomPasswordResetView.as_view(), name='password_reset'),
