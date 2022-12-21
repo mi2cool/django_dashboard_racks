@@ -22,10 +22,11 @@
 <body style="min-height: 100vh; display: flex; flex-direction: column;">
 
 {% include 'includes/navbar.html' %}
+
 {% include 'includes/messages.html' %}
-<div class="container my-5">
-    {% block body_content %}{% endblock %}
-</div>
+
+{% block body_content %}{% endblock %}
+
 {% block body_js_script %}{% endblock %}
 {% include "includes/footer.html" %}
 
