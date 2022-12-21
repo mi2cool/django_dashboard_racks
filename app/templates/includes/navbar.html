@@ -1,6 +1,6 @@
 <nav class="navbar bg-ligt fixed-top shadow-sm" style="background-color: orange; position: relative">
     <div class="container-fluid" style="background-color: orange">
-        <a class="navbar-brand" href="#">Dashboard Racks</a>
+        <a class="navbar-brand" href="/home/">Dashboard Racks</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
                 aria-controls="offcanvasNavbar">
             <span class="navbar-toggler-icon"></span>
@@ -20,16 +20,14 @@
                             User ({{ user.username }})
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            <li><a class="dropdown-item" href="#">Dummy</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li><a class="dropdown-item" href="#">Something else here</a></li>
                         </ul>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                        </li>
+
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">Login</a>

@@ -64,7 +64,16 @@
 
     </form>
 
-    <p class="mt-2"><a href="{% url 'password_reset' %}">Lost password?</a></p>
-    <p class="mt-2"><a href="{% url 'user-register' %}">Not registered?</a></p>
+    <div class="row mt-2">
+
+        <div class="col-2">
+            <a href="{% url 'password_reset' %}">Lost password?</a>
+        </div>
+
+        <div class="col-2">
+            <a href="{% url 'user-register' %}">Not registered?</a>
+        </div>
+
+    </div>
 
 {% endblock %}
