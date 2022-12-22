@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.views.generic import FormView, DetailView, ListView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from .forms import CreateRackForm, UpdateRackForm
 from .models import Rack
@@ -33,3 +34,9 @@ class RackDetailView(DetailView):
 class RackListView(ListView):
     model = Rack
     template_name = "app/rack_list.html"
+
+
+class RackDeleteView(DeleteView):
+    model = Rack
+    template_name = "app/rack_delete.html"
+    success_url = reverse_lazy('rack-list')

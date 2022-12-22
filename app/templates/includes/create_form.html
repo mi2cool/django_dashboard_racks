@@ -1,12 +1,12 @@
 {% extends "wrapper/standard_create_view.html" %}
 
-{% block standard_create_head_title %} {{ title }} | Create {% endblock %}
+{% block standard_create_head_title %} {{ title }} | {% if object %}Update{% else %}Create{% endif %}{% endblock %}
 
 {% block standard_create_content %}
 
-    <p class="display-4">Create {{ title }}</p>
+    <p class="display-4">{% if object %}Update{% else %}Create{% endif %} {{ title }}</p>
 
-    <p class="lead">Create a new {{ title }}.</p>
+    <p class="lead">{% if object %}Update {{ object }}{% else %}Create a new  {{ title }}.{% endif %}</p>
 
     <form method="post" class="form-floating">{% csrf_token %}
 

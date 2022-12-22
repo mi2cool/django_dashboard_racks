@@ -1,0 +1,11 @@
+{% extends "wrapper/confim_delete.html" %}
+
+{% block confirm_delete_head_title %}{{ object.name }} | Delete {% endblock %}
+
+{% block confirm_delete_content %}
+    <form method="post">{% csrf_token %}
+        <p class="lead">Are you sure you want to delete "{{ object }}"?</p>
+        {{ form }}
+        <input type="submit" value="Confirm" class="btn btn-dark">
+    </form>
+{% endblock %}

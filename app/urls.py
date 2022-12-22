@@ -7,8 +7,10 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('home/', auth_views.index, name='home'),
 
+    # RACK
     path('rack/create', views.RackCreateView.as_view(), name='rack-create'),
-    path('rack/<int:pk>/detail', views.RackDetailView.as_view(), name='rack-detail'),
     path('rack/<int:pk>/update', views.RackUpdateView.as_view(), name='rack-update'),
-    path('racks', views.RackListView.as_view(), name='rack-list'),
+    path('rack/<int:pk>/detail', views.RackDetailView.as_view(), name='rack-detail'),
+    path('rack/<int:pk>/delete', views.RackDeleteView.as_view(), name='rack-delete'),
+    path('racks/', views.RackListView.as_view(), name='rack-list'),
 ]

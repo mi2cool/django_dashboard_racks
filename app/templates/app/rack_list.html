@@ -6,12 +6,36 @@
 
     <p class="display-4">Racks</p>
 
-    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-secondary" aria-hidden="true"></i></a></p>
+    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-success" aria-hidden="true"></i></a></p>
 
-        {% for rack in object_list %}
-            <p>{{ rack.name }}</p>
-        {% empty %}
-            <p>No racks yet.</p>
-        {% endfor %}
+
+    <div class="container overflow-hidden text-left">
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="row g-2">
+
+                    {% for rack in object_list %}
+
+                        <div class="hstack gap-3">
+                            <input class="form-control me-auto" type="text" readonly placeholder="{{ rack.name }}">
+                            <a href="{% url 'rack-update' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-pen text-primary"></i></a>
+                            <div class="vr"></div>
+                            <a href="{% url 'rack-delete' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-trash text-danger"></i></a>
+                        </div>
+
+                    {% empty %}
+                        <p>No racks yet.</p>
+                    {% endfor %}
+
+
+                </div>
+            </div>
+            <div class="col">
+
+            </div>
+        </div>
+
+
+    </div>
 
 {% endblock %}
