@@ -24,6 +24,7 @@ from dashboard_racks import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('app.auth_urls')),
     path('', include('app.urls')),
     # path('api-auth/', include('rest_framework.urls')),
 ]

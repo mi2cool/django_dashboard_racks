@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block head_title %} Login {% endblock %}
+{% block head_title %}
+    {% block standard_form_head_title %}  {% endblock %}
+{% endblock %}
 
 {% block body_content %}
     <div class="container pt-5">

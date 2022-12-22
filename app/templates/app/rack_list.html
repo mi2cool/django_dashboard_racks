@@ -1,0 +1,17 @@
+{% extends "wrapper/standard_list_view.html" %}
+
+{% block standard_list_head_title %}Create {{ object.name }}{% endblock %}
+
+{% block standard_list_content %}
+
+    <p class="display-4">Racks</p>
+
+    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-secondary" aria-hidden="true"></i></a></p>
+
+        {% for rack in object_list %}
+            <p>{{ rack.name }}</p>
+        {% empty %}
+            <p>No racks yet.</p>
+        {% endfor %}
+
+{% endblock %}

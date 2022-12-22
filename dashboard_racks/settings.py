@@ -24,7 +24,13 @@ SECRET_KEY = 'django-insecure-8)gy71r^#+6ritrnunl0ho84rzg*^ff1f)1n6ypae2dy+5va*(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = platform.system() != "Linux"
+
+if platform.system() != "Linux":
+    LOCAL_FILE_DIR = "C:\\"
+    DEBUG = True
+else:
+    LOCAL_FILE_DIR = r"/home/"
+    DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 

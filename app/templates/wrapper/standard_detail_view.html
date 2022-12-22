@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head_title %}
+    {% block standard_detail_head_title %}  {% endblock %}
+{% endblock %}
+
+
+{% block body_content %}
+    <div class="col-md-8 offset-md-2 shadow-lg p-4">
+
+        {% block standard_detail_content %}{% endblock %}
+
+    </div>
+{% endblock %}
