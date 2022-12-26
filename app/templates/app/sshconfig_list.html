@@ -4,6 +4,10 @@
 
 {% block standard_list_content %}
 
+
+
+    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-success" aria-hidden="true"></i></a></p>
+
     <div class="container overflow-hidden text-left">
 
         <div class="row">
@@ -16,13 +20,9 @@
 
                     <p class="lead">A list of all configured racks.</p>
 
-                    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-success" aria-hidden="true"></i></a></p>
-
                     {% for rack in object_list %}
 
                         <div class="hstack gap-3 shadow-sm bg-light p-2">
-
-
                             <input class="form-control me-auto" type="text" readonly placeholder="{{ rack.name }}">
 
                             <a href="{% url 'rack-detail' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>

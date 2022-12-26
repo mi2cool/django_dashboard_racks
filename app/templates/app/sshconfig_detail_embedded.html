@@ -1,0 +1,18 @@
+<p class="display-6">Details of {{ object }} </p>
+
+<div class="form-floating mb-3">
+    <input type="text" class="form-control" id="floatingInput" readonly value="{{ object.hostname }}">
+    <label for="floatingInput">Hostname</label>
+</div>
+<div class="form-floating mb-3">
+    <input type="password" class="form-control" id="floatingPassword" readonly value="{{ object.password }}">
+    <label for="floatingPassword">Password</label>
+</div>
+<div class="form-floating mb-3">
+    <input type="number" class="form-control" id="floatingInput" readonly value="{{ object.port }}">
+    <label for="floatingInput">Port</label>
+</div>
+<div class="form-floating mb-3">
+    <input type="text" class="form-control" id="id_private_key" readonly value="{{ object.private_key }}">
+    <label class="floatingInput" for="id_private_key">Private Key</label>
+</div>

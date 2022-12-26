@@ -11,7 +11,9 @@ from .auth_forms import CustomAuthenticationForm
 # Create your views here.
 def index(request):
     context = {}
-    return render(request, 'app/index.html', context)
+    # return render(request, 'app/index.html', context)
+
+    return redirect('rack-list')
 
 
 class RegisterFormView(FormView):

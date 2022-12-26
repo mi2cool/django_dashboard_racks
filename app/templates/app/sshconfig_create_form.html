@@ -1,0 +1,8 @@
+{#Create Rack form#}
+{% extends "wrapper/create_view.html" %}
+
+{% block standard_create_headline %}
+    <p class="display-4">{% if object %}Update{% else %}Create{% endif %} Ssh Config of rack {{ rack }}</p>
+
+    <p class="lead">{% if object %}Update ssh config {{ object }}.{% else %}Create a new SshConfig.{% endif %}</p>
+{% endblock %}

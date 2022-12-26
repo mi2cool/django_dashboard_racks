@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block head_title %}
+    {% block standard_create_head_title %}  {% endblock %}
+{% endblock %}
+
+{% block body_content %}
+    <div class="col-md-6 offset-md-3 shadow-lg p-4 mt-2">
+
+        {% block standard_create_headline %}
+
+        {% endblock %}
+
+        <form method="post" class="form-floating">{% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-floating mb-3">
+                    {{ field.errors }}
+                    {{ field }} {{ field.label_tag }}
+                    {% if field.help_text %}
+                        <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <input type="submit" value="{% if object %}Update{% else %}Create{% endif %}" class="btn btn-dark">
+        </form>
+
+    </div>
+{% endblock %}

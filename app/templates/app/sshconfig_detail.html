@@ -1,0 +1,9 @@
+{% extends "wrapper/detail_view.html" %}
+
+{% block standard_detail_head_title %}{{ object.name }} | Details {% endblock %}
+
+{% block standard_detail_content %}
+
+    {% include 'app/sshconfig_detail_embedded.html' with object=object %}
+
+{% endblock %}

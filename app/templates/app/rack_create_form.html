@@ -1,2 +1,8 @@
 {#Create Rack form#}
-{% include 'includes/create_form.html' with form=form title='Rack' %}
+{% extends "wrapper/create_view.html" %}
+
+{% block standard_create_headline %}
+    <p class="display-4">{% if object %}Update{% else %}Create{% endif %} Rack</p>
+
+    <p class="lead">{% if object %}Update {{ object }}{% else %}Create a new Rack.{% endif %}</p>
+{% endblock %}

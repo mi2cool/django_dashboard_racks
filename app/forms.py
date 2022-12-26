@@ -1,3 +1,6 @@
+import os
+import platform
+
 from django.contrib import messages
 from django import forms
 from django.forms import TextInput
@@ -5,7 +8,7 @@ from django.template import loader
 from django.utils.translation import gettext_lazy as _
 
 from dashboard_racks import settings
-from .models import Rack
+from .models import Rack, SshConfig, ReportConfig
 
 
 class CreateRackForm(forms.ModelForm):
@@ -20,5 +23,96 @@ class CreateRackForm(forms.ModelForm):
         model = Rack
         fields = ['name', ]
 
+    def __str__(self):
+        return "CreateRackForm"
+
+
 class UpdateRackForm(CreateRackForm):
-    pass
+    def __str__(self):
+        return "UpdateRackForm"
+
+
+class CreateSshConfigForm(forms.ModelForm):
+    hostname = forms.CharField(
+        label='Hostname',
+        required=True,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'},
+        ))
+
+    username = forms.CharField(
+        label="Username",
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'},
+        )
+    )
+
+    password = forms.CharField(
+        label="Password",
+        required=False,
+
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control', "autocomplete": "current-password"},
+            render_value=True
+        )
+    )
+
+    private_key = forms.FileField(
+        label='Private Key',
+        required=False,
+        widget=forms.FileInput(
+            attrs={'class': 'form-control'}
+        )
+    )
+
+    port = forms.IntegerField(
+        label='Port',
+        widget=forms.NumberInput(
+            attrs={'class': 'form-control'}
+        )
+    )
+
+    class Meta:
+        model = SshConfig
+        fields = ['hostname', 'username', 'password', 'private_key', 'port']
+
+    def __str__(self):
+        return "CreateSshConfigForm"
+
+
+class UpdateSshConfigForm(CreateSshConfigForm):
+    def __str__(self):
+        return "UpdateSshConfigForm"
+
+
+class CreateReportConfigForm(forms.ModelForm):
+    remote_report_path = forms.CharField(
+        label='Remote Directory',
+        required=True,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'},
+        ))
+
+    report_archive_path = forms.CharField(
+        label='Archive',
+        empty_value=os.path.join(os.environ.get('USERPROFILE'), 'racks', 'report_archive') if platform.system().lower() == 'windows' else '~/',
+        required=False,
+        widget=TextInput(
+            attrs={
+                'class': 'form-control',
+            }
+        )
+    )
+
+    class Meta:
+        model = ReportConfig
+        fields = ['remote_report_path', 'report_archive_path', ]
+
+    def __str__(self):
+        return "CreateReportConfigForm"
+
+
+class UpdateReportConfigForm(CreateReportConfigForm):
+    def __str__(self):
+        return "UpdateReportConfigForm"
