@@ -49,13 +49,11 @@ def archive_reports(request, rack_pk):
         hostname=ssh_config.hostname,
         username=ssh_config.username,
         password=ssh_config.password,
-        private_key=ssh_config.private_key,
+        private_key=ssh_config.private_key.url,
         port=ssh_config.port,
     )
-    now = datetime.now()
-    tstring = now.strftime("%Y.%m.%d_%H%M%S")
 
-    local_path = os.path.join(report_config.report_archive_path, rack.name)
+    local_path = settings.MEDIA_ROOT + os.sep + rack.name
 
     if not sftp_api.is_connected:
         sftp_api.connect()
@@ -72,16 +70,18 @@ def archive_reports(request, rack_pk):
         path = local_path + os.sep + r
         f = open(path)
 
-        ctime = os.path.getctime(path)
-        stats = os.stat(path)
-        dt = datetime.fromtimestamp(ctime, tz=pytz.UTC)
+        fname = os.path.basename(r).split('_Testresult')[0]
+        dt = datetime.strptime(fname, '%Y-%m-%d_%H-%M-%S')
 
         report: Report = Report.objects.get_or_create(
             archive=archive,
             verdict='PASSED' if 'error' not in r.lower() else 'FAILED',
             created=dt,
             name=r)[0]
-        report.file.save(name=r, content=File(f))
+        report.file.save(name=r, content=File(f), save=False)
+        if os.path.exists(r):
+            os.remove(r)
+        report.save()
 
     messages.success(request, f'Moved {n_moved_files} files from {ssh_config.hostname} to archive.', extra_tags='success')
 

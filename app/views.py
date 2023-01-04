@@ -45,36 +45,6 @@ def index(request):
     return redirect('rack-list')
 
 
-def rack_archive_report_list_filtered(request, pk):
-    form = None
-    rack = get_object_or_404(Rack, pk=pk)
-    report_config = rack.report_config
-    filter_form = ReportFilterForm()
-    Report = namedtuple('report', ['name', 'result', 'path'])
-    report_list = [Report(x, 'FAILED' if 'error' in x.lower() else 'PASSED', report_config.report_archive_path + os.sep + rack.name + os.sep + x)
-                   for x in os.listdir(report_config.report_archive_path + os.sep + rack.name) if x.endswith('.html')]
-
-    context = {
-        'rack': rack,
-        'filter_form': filter_form,
-        'report_list': report_list,
-    }
-
-    if request.method == 'GET' and request.GET:
-        form = ReportFilterForm(request.GET)
-        if form.is_valid():
-            if result := form.data.get('result', None):
-                r = ''
-                if result.upper() == 'ERROR':
-                    report_list = [r for r in context.get('report_list', None) if 'error' in r.name.lower()]
-                elif result.upper() == 'PASSED':
-                    report_list = [r for r in context.get('report_list', None) if 'error' not in r.name.lower()]
-
-                context['report_list'] = report_list
-
-    return render(request, 'app/rack_report_list_filtered.html', context)
-
-
 class RackCreateView(CreateView):
     model = Rack
     form_class = CreateRackForm
@@ -127,7 +97,6 @@ class RackUpdateView(UpdateView):
             context['report_config_form'] = self.report_config_form_class(
                 initial={
                     'remote_report_path': rack.report_config.remote_report_path,
-                    'report_archive_path': rack.report_config.report_archive_path,
                 })
 
         return context
@@ -192,7 +161,7 @@ class RackDetailView(DetailView):
             hostname=ssh_config.hostname,
             username=ssh_config.username,
             password=ssh_config.password,
-            private_key=ssh_config.private_key,
+            private_key=ssh_config.private_key.path,
             port=ssh_config.port,
         )
 
@@ -221,27 +190,9 @@ class RackDetailView(DetailView):
             messages.success(self.request, f"Failed to connect to {self.object.ssh_config.hostname}", extra_tags='danger')
             messages.success(self.request, f"Error message: {str(ex)}", extra_tags='danger')
 
-        # try:
-        #     self._extracted_from_get_context_data_42(report_config, context)
-        # except Exception as ex:
-        #     messages.success(self.request, f"Failed to load report archive of {self.object.name}", extra_tags='danger')
-        #     messages.success(self.request, f"Error message: {str(ex)}", extra_tags='danger')
-
-        context['test'] = 'test'
         if reports:
             context['reports'] = reports
         return context
-
-    # TODO Rename this here and in `get_context_data`
-    def _extracted_from_get_context_data_42(self, report_config, context):
-        # get archive files
-        archive_path = report_config.report_archive_path + os.sep + self.object.name
-        archive_report_list = [x for x in self.object.archive.reports if x.name.endswith('.html')]
-        archive_reports_failed = [x for x in archive_report_list if 'error' in x.name.lower()]
-        archive_reports_passed = [x for x in archive_report_list if 'error' not in x.name.lower()]
-        context['archive_report_list'] = archive_report_list
-        context['archive_reports_failed'] = archive_reports_failed
-        context['archive_reports_passed'] = archive_reports_passed
 
 
 class RackListView(ListView):
@@ -302,12 +253,10 @@ class ReportFilteredListView(FilteredListView):
     template_name = "app/rack_report_list_filtered.html"
     paginate_by = 250
 
-
     def get_context_data(self, **kwargs):
         context = super(ReportFilteredListView, self).get_context_data(**kwargs)
         rack = get_object_or_404(Rack, pk=self.kwargs.get('rack_pk', None))
         context['rack'] = rack
-
 
         # for report in rack.archive.reports.all():
         #     report.verdict = 'FAILED' if 'error' in report.name.lower() else 'PASSED'

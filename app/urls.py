@@ -28,6 +28,5 @@ urlpatterns = [
     path('rack/<int:rack_pk>/report/<int:pk>/detail/', views.ReportDetailView.as_view(), name='rack-report-detail'),
     path('rack/<int:rack_pk>/report/<int:pk>/delete/', views.ReportDeleteView.as_view(), name='rack-report-delete'),
     path('rack/<int:rack_pk>/reports/delete/selected/', api.delete_selected_reports, name='rack-reports-delete-selected'),
-    # path('racks/<int:pk>/reports/filtered', views.rack_archive_report_list_filtered, name='rack-report-list-filtered'),
     path('rack/<int:rack_pk>/reports/filtered', views.ReportFilteredListView.as_view(), name='rack-report-list-filtered'),
 ]

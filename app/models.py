@@ -27,11 +27,6 @@ class ReportConfig(models.Model):
         default='~/'
     )
 
-    report_archive_path = models.CharField(
-        verbose_name=_('report archive'),
-        max_length=254,
-        default=os.path.join(os.environ.get('USERPROFILE'), 'racks', 'report_archive') if platform.system().lower() == 'windows' else os.path.join('~/', 'racks', 'report_archive')
-    )
 
     def __str__(self):
         return 'Report Config'

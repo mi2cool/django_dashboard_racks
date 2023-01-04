@@ -105,20 +105,11 @@ class CreateReportConfigForm(forms.ModelForm):
             attrs={'class': 'form-control'},
         ))
 
-    report_archive_path = forms.CharField(
-        label='Archive',
-        empty_value=os.path.join(os.environ.get('USERPROFILE'), 'racks', 'report_archive') if platform.system().lower() == 'windows' else '~/',
-        required=False,
-        widget=TextInput(
-            attrs={
-                'class': 'form-control',
-            }
-        )
-    )
+
 
     class Meta:
         model = ReportConfig
-        fields = ['remote_report_path', 'report_archive_path', ]
+        fields = ['remote_report_path',  ]
 
     def __str__(self):
         return "CreateReportConfigForm"

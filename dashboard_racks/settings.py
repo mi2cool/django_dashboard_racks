@@ -135,7 +135,7 @@ else:
     STATIC_ROOT = "/var/www/haekelliebe/static"
 
 STATICFILES_DIRS = [
-    BASE_DIR / "media",
+    # BASE_DIR / "media",
     BASE_DIR / "static/styles",
     # BASE_DIR / "node_modules",
     # "E:\__reports",
