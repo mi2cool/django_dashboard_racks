@@ -1,0 +1,46 @@
+<div class="row">
+
+    <div class="col-sm-auto offset-md-0 mt-0">
+        <div id="donutchart_{{ title }}" class="m-0"></div>
+    </div>
+
+    <div class="col-md-4 offset-md-0 mt-4">
+
+        <p class="lead m-0">Absolute number of reports:</p>
+        <p class="lead m-0">Failed reports:</p>
+        <p class="lead m-0">Passed reports:</p>
+
+    </div>
+
+    <div class="col-md-1 offset-md-0 mt-4">
+
+        <p class="lead m-0">{{ n_absolute }}</p>
+        <p class="lead m-0">{{ n_failed }}</p>
+        <p class="lead m-0">{{ n_passed }}</p>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    google.charts.load("current", {packages: ["corechart"]});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Result', 'Number'],
+            ['Failed', {{ n_failed }}],
+            ['Passed', {{ n_passed }}],
+        ]);
+
+        var options = {
+            'title': 'Results of {{title}}',
+            'width': 550,
+            'height': 400,
+            'colors': ['#fc0303', '#1cfc03'],
+            pieHole: 0.4,
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('donutchart_{{ title }}'));
+        chart.draw(data, options);
+    }
+</script>

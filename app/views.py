@@ -1,24 +1,78 @@
+import os
+
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import FormView, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from .forms import CreateRackForm, UpdateRackForm, UpdateSshConfigForm, UpdateReportConfigForm
-from .models import Rack, SshConfig, ReportConfig
-from .utils.paramiko_wrapper import SftpApi
+from dashboard_racks import settings
+from .filters import ReportFilter
+from .forms import CreateRackForm, UpdateRackForm, UpdateSshConfigForm, UpdateReportConfigForm, ReportFilterForm
+from .models import Rack, SshConfig, ReportConfig, Report
+from .utils.paramiko_wrapper import SftpApi, sftp_instances, get_sftp_instance_by_hostname
 
 from collections import namedtuple
 
-sftp = None
-sftp_api = None
 
 # Create your views here.
+class FilteredListView(ListView):
+    filterset_class = None
+
+    def get_queryset(self):
+        # Get the queryset however you usually would.  For example:
+        queryset = super().get_queryset()
+        # Then use the query parameters and the queryset to
+        # instantiate a filterset and save it as an attribute
+        # on the view instance for later.
+        self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        # Return the filtered queryset
+        return self.filterset.qs.distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Pass the filterset to the template - it provides the form.
+        context['filterset'] = self.filterset
+        return context
+
+
 def index(request):
     context = {}
     # return render(request, 'app/index.html', context)
     return redirect('rack-list')
+
+
+def rack_archive_report_list_filtered(request, pk):
+    form = None
+    rack = get_object_or_404(Rack, pk=pk)
+    report_config = rack.report_config
+    filter_form = ReportFilterForm()
+    Report = namedtuple('report', ['name', 'result', 'path'])
+    report_list = [Report(x, 'FAILED' if 'error' in x.lower() else 'PASSED', report_config.report_archive_path + os.sep + rack.name + os.sep + x)
+                   for x in os.listdir(report_config.report_archive_path + os.sep + rack.name) if x.endswith('.html')]
+
+    context = {
+        'rack': rack,
+        'filter_form': filter_form,
+        'report_list': report_list,
+    }
+
+    if request.method == 'GET' and request.GET:
+        form = ReportFilterForm(request.GET)
+        if form.is_valid():
+            if result := form.data.get('result', None):
+                r = ''
+                if result.upper() == 'ERROR':
+                    report_list = [r for r in context.get('report_list', None) if 'error' in r.name.lower()]
+                elif result.upper() == 'PASSED':
+                    report_list = [r for r in context.get('report_list', None) if 'error' not in r.name.lower()]
+
+                context['report_list'] = report_list
+
+    return render(request, 'app/rack_report_list_filtered.html', context)
 
 
 class RackCreateView(CreateView):
@@ -31,6 +85,9 @@ class RackCreateView(CreateView):
         self.object.ssh_config = SshConfig.objects.create()
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy('rack-update', kwargs={'pk': self.object.pk})
 
 
 class RackUpdateView(UpdateView):
@@ -127,47 +184,64 @@ class RackDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         reports = []
-
         context = super(RackDetailView, self).get_context_data()
+        ssh_config: SshConfig = self.object.ssh_config
+        report_config: ReportConfig = self.object.report_config
 
-        global sftp_api, sftp
-        if not sftp_api:
-            sftp_api = SftpApi(
-                remote_ip=self.object.ssh_config.hostname,
-                username=self.object.ssh_config.username,
-                password=self.object.ssh_config.password,
-                private_key=self.object.ssh_config.private_key or '',
-                port=self.object.ssh_config.port,
-            )
+        sftp_api = get_sftp_instance_by_hostname(
+            hostname=ssh_config.hostname,
+            username=ssh_config.username,
+            password=ssh_config.password,
+            private_key=ssh_config.private_key,
+            port=ssh_config.port,
+        )
 
         try:
             if not sftp_api.is_connected:
                 sftp_api.connect()
 
             sftp = sftp_api.get_sftp()
-            reports = sftp.listdir(self.object.report_config.remote_report_path)
+            reports = [x for x in sftp.listdir(self.object.report_config.remote_report_path) if x.endswith('.html')]
 
-            ReportCollection = []
+            remote_report_collection = []
             Report = namedtuple('report', ['name', 'tag'])
             _err_cnt = 0
             for r in reports:
                 _tag = 'success'
                 if 'error' in r.lower():
                     _tag = 'danger'
-                    _err_cnt+=1
-                ReportCollection.append(Report(r, _tag))
+                    _err_cnt += 1
+                remote_report_collection.append(Report(r, _tag))
 
             context['remote_reports_failed'] = _err_cnt
-            context['ReportCollection'] = ReportCollection
+            context['remote_reports_passed'] = len(remote_report_collection) - _err_cnt
+            context['remote_report_collection'] = remote_report_collection
 
         except Exception as ex:
             messages.success(self.request, f"Failed to connect to {self.object.ssh_config.hostname}", extra_tags='danger')
             messages.success(self.request, f"Error message: {str(ex)}", extra_tags='danger')
 
+        # try:
+        #     self._extracted_from_get_context_data_42(report_config, context)
+        # except Exception as ex:
+        #     messages.success(self.request, f"Failed to load report archive of {self.object.name}", extra_tags='danger')
+        #     messages.success(self.request, f"Error message: {str(ex)}", extra_tags='danger')
+
         context['test'] = 'test'
         if reports:
             context['reports'] = reports
         return context
+
+    # TODO Rename this here and in `get_context_data`
+    def _extracted_from_get_context_data_42(self, report_config, context):
+        # get archive files
+        archive_path = report_config.report_archive_path + os.sep + self.object.name
+        archive_report_list = [x for x in self.object.archive.reports if x.name.endswith('.html')]
+        archive_reports_failed = [x for x in archive_report_list if 'error' in x.name.lower()]
+        archive_reports_passed = [x for x in archive_report_list if 'error' not in x.name.lower()]
+        context['archive_report_list'] = archive_report_list
+        context['archive_reports_failed'] = archive_reports_failed
+        context['archive_reports_passed'] = archive_reports_passed
 
 
 class RackListView(ListView):
@@ -208,3 +282,50 @@ class SshConfigDeleteView(DeleteView):
 class SshConfigListView(ListView):
     model = SshConfig
     template_name = "app/sshconfig_list.html"
+
+
+@method_decorator(xframe_options_exempt, name='dispatch')
+class ReportDetailView(DetailView):
+    model = Report
+    template_name = "app/report_detail.html"
+
+    def get_context_data(self, **kwargs):
+        reports = []
+        context = super(ReportDetailView, self).get_context_data()
+        context['placeholder'] = 'placeholder'
+        return context
+
+
+class ReportFilteredListView(FilteredListView):
+    model = Report
+    filterset_class = ReportFilter
+    template_name = "app/rack_report_list_filtered.html"
+    paginate_by = 250
+
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportFilteredListView, self).get_context_data(**kwargs)
+        rack = get_object_or_404(Rack, pk=self.kwargs.get('rack_pk', None))
+        context['rack'] = rack
+
+
+        # for report in rack.archive.reports.all():
+        #     report.verdict = 'FAILED' if 'error' in report.name.lower() else 'PASSED'
+        #     report.save()
+
+        return context
+
+
+class ReportDeleteView(DeleteView):
+    model = Report
+    template_name = "app/report_confirm_delete.html"
+
+    def form_valid(self, form):
+        success_url = self.get_success_url()
+        report: Report = self.object
+        os.remove(os.path.abspath(os.path.join(os.path.join(settings.MEDIA_ROOT, report.file.name))))
+        report.delete()
+        return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        return reverse_lazy('rack-report-list-filtered', kwargs={'rack_pk': self.kwargs.get('rack_pk')})

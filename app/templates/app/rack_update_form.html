@@ -10,6 +10,12 @@
 
         <p class="lead">Details of the rack {{ object }}. </p>
 
+        <div class="my-2">
+            <a href="{% url 'rack-detail' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>
+            <a href="{% url 'rack-delete' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-trash text-danger"></i></a>
+        </div>
+
+
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                 <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Config Rack</button>

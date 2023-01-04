@@ -1,0 +1,25 @@
+{% load i18n %}
+
+{% if title %}
+    <p class="display-6">{{ title }}</p>
+{% endif %}
+
+<form method="get" class="form-floating">
+
+
+    {% for field in form %}
+        <div class="row mb-3">
+            {{ field.errors }}
+            <label for="{{ field.id_for_label }}" class="col-sm-2 col-form-label">{{ field.label }}</label>
+
+            <div class="col-sm-auto">{{ field }}</div>
+
+            {% if field.help_text %}
+                <p class="help">{{ field.help_text|safe }}</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <input type="submit" value="{% translate 'Apply' %}" class="btn btn-dark" name="id_{{ id }}">
+</form>
+

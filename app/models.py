@@ -51,9 +51,81 @@ class Rack(models.Model):
         verbose_name='Report configuration',
         null=True
     )
+    archive = models.ForeignKey(
+        'ReportArchive',
+        on_delete=models.CASCADE,
+        verbose_name='Archive',
+        null=True,
+        related_name='rack'
+    )
 
     def get_absolute_url(self):
         return reverse_lazy('rack-detail', kwargs={'pk': self.pk})
 
     def __str__(self):
         return self.name
+
+
+class ReportArchive(models.Model):
+    name = models.CharField(max_length=254, verbose_name=_('Name of rack'))
+
+    def get_number_of_passed(self):
+        n = len([r for r in self.reports.all() if r.verdict.lower() == 'passed'])
+        return n
+
+    def get_number_of_failed(self):
+        n = len([r for r in self.reports.all() if r.verdict.lower() == 'failed'])
+        return n
+
+    def __str__(self):
+        return self.name
+
+
+def rack_archive_report_upload_path(instance, filename):
+    return 'archive_{0}/{1}'.format(instance.archive.name, filename)
+
+
+class Report(models.Model):
+    VERDICT_CHOICES = [
+        ('', '---------'),  # replace the value '----' with whatever you want, it won't matter
+        ('PASSED', 'Passed'),
+        ('FAILED', 'Failed'),
+    ]
+
+    name = models.CharField(
+        max_length=254,
+        verbose_name=_('Name of report')
+    )
+    archive = models.ForeignKey(
+        'ReportArchive',
+        on_delete=models.CASCADE,
+        verbose_name='Archive',
+        null=True,
+        related_name='reports'
+    )
+
+    file = models.FileField(
+        upload_to=rack_archive_report_upload_path,
+        null=True
+    )
+
+    verdict = models.CharField(
+        max_length=10,
+        choices=VERDICT_CHOICES,
+        null=True
+    )
+
+    created = models.DateTimeField(
+        verbose_name='Created',
+        null=True,
+
+    )
+
+    class Meta:
+        ordering = ['created']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse_lazy('rack-detail', kwargs={'pk': self.pk, 'rack_pk': self.archive.rack.pk})

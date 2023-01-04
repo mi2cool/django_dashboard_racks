@@ -137,6 +137,8 @@ else:
 STATICFILES_DIRS = [
     BASE_DIR / "media",
     BASE_DIR / "static/styles",
+    # BASE_DIR / "node_modules",
+    # "E:\__reports",
     # '/var/www/static/',
 ]
 
@@ -172,3 +174,7 @@ REST_FRAMEWORK = {
 # CAPTCHA
 RECAPTCHA_PUBLIC_KEY = '6LfakhUiAAAAANEwt3yqV4ukFmh_B_RUtFKtTgcJ'
 RECAPTCHA_PRIVATE_KEY = '6LfakhUiAAAAAHbXVCOp6vDc_DLJ3aJ4MujgXfMn'
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+

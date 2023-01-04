@@ -1,0 +1,17 @@
+{% extends "wrapper/detail_view.html" %}
+{% load static %}
+
+{% block standard_detail_head_title %}{{ object.name }} | Details {% endblock %}
+
+{% block standard_detail_content %}
+    <p class="display-6">Details of the rack {{ object }} </p>
+
+    <div class="container">
+        <iframe type="html"
+                class="border border-secondary"
+                src="{{ object.file.url }}"
+                onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;overflow:hidden;"
+                id="id_iframe_{{ object.pk }}"></iframe>
+    </div>
+
+{% endblock %}

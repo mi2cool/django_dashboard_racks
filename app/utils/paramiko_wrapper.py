@@ -10,6 +10,8 @@ import paramiko
 
 import logging
 
+sftp_instances = {}  # {'hostname' : SftpApiInstance}
+
 logger = logging.getLogger('paramiko_wrapper')
 
 DEFAULT_PATH_SEP = "/"
@@ -27,6 +29,21 @@ IO_ERROR = "IO Error: {0}"
 OS_ERROR = "OS Error: {0}"
 IO_OS_ERROR = "IO/OS Error: {0}"
 SSH_EXCEPTION = "SSHException: {0}"
+
+
+def get_sftp_instance_by_hostname(hostname, username, password, private_key=None, port=22):
+    global sftp_instances
+    return (
+        SftpApi(
+            remote_ip=hostname,
+            username=username,
+            password=password,
+            private_key=private_key or '',
+            port=port,
+        )
+        if hostname not in sftp_instances.keys()
+        else sftp_instances.get(hostname)
+    )
 
 
 def _create_local_dir(local_dir: str, calling_function: str) -> bool:
@@ -84,7 +101,6 @@ class SftpApi:
         except paramiko.SSHException as e:
             logger.warning(SSH_EXCEPTION.format(e))
 
-
     @property
     def is_connected(self):
         if self._ssh and self._ssh.get_transport() is not None:
@@ -135,7 +151,8 @@ class SftpApi:
             return False
 
         try:
-            sftp.get(remotepath=remote_path, localpath=local_path)
+            local_file_path = os.path.abspath(os.path.join(local_path, os.path.basename(remote_path)))
+            sftp.get(remotepath=remote_path, localpath=local_file_path)
         except IOError as err:
             logger.warning(COPY_FROM_REMOTE_ERROR.format(remote_path, local_path))
             logger.warning(IO_ERROR.format(err))
@@ -295,6 +312,36 @@ class SftpApi:
 
         remote_path = remote_dir + remote_path_sep + files[-1].filename
         return self.copy_file_from_remote(remote_path, local_path)
+
+    def move_from_remote_by_pattern(self, remote_dir: str, local_path: str, remote_regex: re.Pattern | str,
+                                        remote_path_sep: str = DEFAULT_PATH_SEP) -> int:
+        """
+        Copies the latest file on the remote system that matches the given regular expression to the local system.
+        Logs a warning and returns False if no such file exists.
+        :rtype: int:            Number of files moved from remote to local.
+        :param remote_dir:      Path to the remote directory with the file to be copied.
+        :param local_path:      Destination path on the local system (including file name and ending!).
+        :param remote_regex:    Regular expression for the file to be copied.
+        :param remote_path_sep: Path separator symbol ('/' for Linux/Unix/Mac, '\\' for Windows).
+        """
+        sftp = self._check_sftp(self.move_from_remote_by_pattern.__name__)
+        if sftp is None:
+            return False
+
+        files = list(filter(lambda entry: re.match(remote_regex, entry.filename), sftp.listdir_attr(remote_dir)))
+        files.sort(key=lambda entry: entry.st_mtime)
+
+        if not files:
+            logger.warning(NO_FILE_MATCHING_ERROR.format(remote_regex, remote_dir))
+            return False
+
+        for f in files:
+            path = remote_dir + remote_path_sep + f.filename
+
+            self.copy_file_from_remote(path, local_path)
+            self.delete_file_on_remote(path)
+
+        return len(files)
 
     def delete_file_on_remote(self, remote_path: str) -> bool:
         """

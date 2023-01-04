@@ -10,6 +10,17 @@ from django.utils.translation import gettext_lazy as _
 from dashboard_racks import settings
 from .models import Rack, SshConfig, ReportConfig
 
+REPORT_STATUS = (('PASSED', 'Passed'), ('ERROR', 'Failed'), ('ALL', 'All'))
+
+class ReportFilterForm(forms.Form):
+    result = forms.ChoiceField(
+        choices=REPORT_STATUS,
+        widget=forms.Select(
+            choices=REPORT_STATUS,
+            attrs={'class': 'form-control'}
+        )
+    )
+
 
 class CreateRackForm(forms.ModelForm):
     name = forms.CharField(

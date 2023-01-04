@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head_title %}
+    {{ rack.name }} | Filtered Report List
+{% endblock %}
+
+
+{% block head_style %}
+    <style>
+        iframe[seamless] {
+            border: none;
+        }
+    </style>
+{% endblock %}
+
+{% block body_content %}
+    <div class="col-md-8 offset-md-2 shadow-lg p-4">
+        <p class="display-4">Archive Report List</p>
+        <p class="lead">A filtered list of all archived report of {{ rack }}.</p>
+
+        <hr>
+
+        <p class="lead">Filter:</p>
+        <form method="get" class="form-floating">
+            {#            {% csrf_token %}#}
+
+            {% for field in filter_form %}
+                <div class="row mb-3">
+                    {{ field.errors }}
+
+                    <label for="{{ field.id_for_label }}" class="col-sm-1 col-form-label">{{ field.label }}</label>
+                    <div class="col-sm-1">{{ field }}</div>
+                    {% if field.help_text %}
+                        <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div>
+
+            {% endfor %}
+
+            <input type="submit" value="{% translate 'Apply' %}" class="btn btn-dark" name="{{ form }}">
+        </form>
+
+        <hr>
+
+        <table class="table table-striped">
+
+            <thead>
+            <tr>
+                <th scope="col">Report</th>
+                <th scope="col">Result</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for report in report_list %}
+                <tr class="{% if report.result == "FAILED" %}table-danger{% endif %} ">
+                    <td>
+                        {{ report.name }}
+                    </td>
+                    <td>{{ report.result }}</td>
+
+                    <td>
+{#                        <a href="{% url 'rack-report-detail' rack_pk=rack.pk pk=report.pk %}"></a>#}
+                        <a href="{% url 'rack-report-detail' rack_pk=rack.pk pk=report.pk %}"><i class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>
+                        <a href="{% url 'rack-update' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-pen text-primary"></i></a>
+                        <a href="{% url 'rack-delete' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-trash text-danger"></i></a>
+
+                    </td>
+
+                </tr>
+            {% endfor %}
+
+
+            </tbody>
+        </table>
+
+
+        {#        {% load static %}#}
+        {#        {% load media %}#}
+        {##}
+        {#        <div class="container">#}
+        {#            <iframe src="UR20-FBC-EIP-ECO/2022-04-28_20-22-32_Testresult.html" seamless="" title="emb_report"></iframe>#}
+        {##}
+        {#            {% include "UR20-FBC-EIP-ECO/2022-04-28_20-22-32_Testresult.html" %}#}
+        {#        </div>#}
+
+
+    </div>
+{% endblock %}

@@ -1,92 +1,68 @@
-{% extends "wrapper/detail_view.html" %}
+{% extends "base.html" %}
 
-{% block standard_detail_head_title %}{{ object.name }} | Details {% endblock %}
+{% block head_title %}{{ object.name }} | Details {% endblock %}
 
-{% block standard_detail_content %}
-    <p class="display-6">Details of the rack {{ object }} </p>
+{% block body_content %}
 
-    <div class="row">
-        <div class="col-md-4 offset-md-0 mt-4">
+    <div class="col-md-8 offset-md-2 shadow p-4 my-4">
+        <p class="display-6">Remote report directory of {{ object }} </p>
+        {% if reports %}
 
-            <p class="lead m-0">Number of remote reports:</p>
-            <p class="lead m-0">Failed reports:</p>
+            <div class="col-md-auto offset-md-0 mt-0">
 
-        </div>
+                <p class="lead">Overview of the current report results on the remote device {{ object.name }} ({{ object.ssh_config.hostname }}).
 
-        <div class="col-md-1 offset-md-0 mt-4">
+                <p class="">
+                    <a href="{% url 'rack-download-report' rack_pk=object.pk %}?next={{ request.path|urlencode }}"
+                       class="my-0 btn btn-dark w-100"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       data-bs-title="Download all reports of the remote device {{ object }}.">
+                        <i class="fa fa-download" aria-hidden="true"></i> Download all reports
+                    </a>
+                </p>
 
-            <p class="lead m-0">{{ ReportCollection | length }}</p>
-            <p class="lead m-0">{{ remote_reports_failed }}</p>
+            </div>
 
-        </div>
-
-
-            <div id="piechart" class="m-0"></div>
+            {% include 'includes/report_pie_chart.html' with n_absolute=remote_report_collection|length n_failed=remote_reports_failed n_passed=remote_reports_passed title='RemoteReports' %}
 
 
+        {% else %}
+            <p class="lead">No reports available on {{ rack.name }} ({{ rack.ssh_config.hostname }}).</p>
+        {% endif %}
+
+        <a href="{% url 'rack-update' pk=rack.pk %}" class="btn btn-dark"><i class="fa-sharp fa-solid fa-pen"></i> Edit</a>
     </div>
 
-{#    <a href="{% url 'your_form_view' %}?next={{ request.path|urlencode }}">Go to my form!</a>#}
 
-    <a href="{% url 'rack-download-report' rack_pk=object.pk %}?next={{ request.path|urlencode }}" class="btn btn-dark my-2">Download all</a>
+    <div class="col-md-8 offset-md-2 shadow p-4 my-4">
+        <div class="row">
+            <p class="display-6">Archive {{ object }} </p>
 
+            {% if object.archive.reports %}
 
-    <script type="text/javascript">
-        // Load google charts
-        google.charts.load('current', {'packages': ['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
+                <div class="col-md-auto offset-md-0 mt-0">
 
-        // Draw the chart and set the chart values
-        function drawChart() {
-            var data = google.visualization.arrayToDataTable([
-                ['Result', 'Number'],
-                ['Failed', {{ remote_reports_failed }}],
-                ['Passed', 3],
+                    <p class="lead">Overview of the archive of the rack {{ object.name }}.</p>
 
-            ]);
+                </div>
 
-            // Optional; add a title and set the width and height of the chart
-            var options = {
-                'title': 'Results of remote reports',
-                'width': 550,
-                'height': 400,
-                'colors': ['#fc0303', '#1cfc03']
-            };
+                <a href="{% url 'rack-report-list-filtered' rack_pk=object.pk %}"
+                   class="btn btn-dark w-100"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   data-bs-title="List of all reports in the archive {{ rack.archive }}.">
 
-            // Display the chart inside the <div> element with id="piechart"
-            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+                    <i class="fa fa-list" aria-hidden="true"></i> Reports
 
-            chart.draw(data, options);
-        }
-    </script>
+                </a>
 
+                {% include 'includes/report_pie_chart.html' with n_absolute=rack.archive.reports.all|length n_failed=rack.archive.get_number_of_failed n_passed=rack.archive.get_number_of_passed title='ArchiveReports' %}
 
-    {#    {% if ReportCollection %}#}
-    {#        {% for report in ReportCollection %}#}
-    {##}
-    {#            <div class="row">#}
-    {#                <div class="col-md-4 offset-md-0  bg-light m-2">#}
-    {#                    <div class="col ">#}
-    {#                        <p><a class="link-{{ report.tag }}" href="{% url 'rack-download-report' rack_pk=object.pk %}">{{ report.name }}</a></p>#}
-    {#                    </div>#}
-    {#                </div>#}
-    {##}
-    {#                <div class="col-md-2 offset-md-1  bg-light m-2">#}
-    {#                    <div class="col ">#}
-    {#                        <p><a class="link-{{ report.tag }}" href="{% url 'rack-download-report' rack_pk=object.pk %}">{{ report.name }}</a></p>#}
-    {#                    </div>#}
-    {#                </div>#}
-    {#            </div>#}
-    {##}
-    {##}
-    {##}
-    {#        {% endfor %}#}
-    {##}
-    {#    {% endif %}#}
-    {##}
-    {#    {% for report in reports %}#}
-    {#        <p><a href="#">{{ report }}</a></p>#}
-    {#    {% endfor %}#}
-
+            {% else %}
+                <p class="lead">No reports available in archive of {{ rack.name }}.</p>
+            {% endif %}
+        </div>
+    </div>
 
 {% endblock %}
