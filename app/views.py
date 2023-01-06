@@ -161,7 +161,7 @@ class RackDetailView(DetailView):
             hostname=ssh_config.hostname,
             username=ssh_config.username,
             password=ssh_config.password,
-            private_key=ssh_config.private_key.path,
+            private_key=ssh_config.private_key.path if ssh_config.private_key else '',
             port=ssh_config.port,
         )
 

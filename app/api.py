@@ -1,15 +1,16 @@
 import os
 from datetime import datetime
 
-import pytz
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.core.files import File
+from django.utils.timezone import make_aware
 
 from dashboard_racks import settings
 from .models import Rack, ReportArchive, Report
 from .utils.paramiko_wrapper import SftpApi, get_sftp_instance_by_hostname
+
 
 sftp = None
 sftp_api = None
@@ -49,7 +50,7 @@ def archive_reports(request, rack_pk):
         hostname=ssh_config.hostname,
         username=ssh_config.username,
         password=ssh_config.password,
-        private_key=ssh_config.private_key.url,
+        private_key=ssh_config.private_key.path if ssh_config.private_key else '',
         port=ssh_config.port,
     )
 
@@ -72,6 +73,7 @@ def archive_reports(request, rack_pk):
 
         fname = os.path.basename(r).split('_Testresult')[0]
         dt = datetime.strptime(fname, '%Y-%m-%d_%H-%M-%S')
+        dt = make_aware(dt)
 
         report: Report = Report.objects.get_or_create(
             archive=archive,
