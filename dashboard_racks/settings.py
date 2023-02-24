@@ -13,6 +13,8 @@ import os
 import platform
 from pathlib import Path
 
+from dashboard_racks.celery import app
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,19 +37,21 @@ else:
 ALLOWED_HOSTS = ['*']
 
 # Application definition
-
 INSTALLED_APPS = [
-    'app.apps.AppConfig',
-    'import_export',
-    'rest_framework',
-    'django_filters',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'import_export',
+    'rest_framework',
+    'django_filters',
+    'django_celery_beat',
+
+    'app.apps.AppConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -131,15 +135,11 @@ if DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 else:
     app_pw = 'zqisohhloamklawi'
-    MEDIA_ROOT = "/var/www/haekelliebe/media"
-    STATIC_ROOT = "/var/www/haekelliebe/static"
+    MEDIA_ROOT = "/var/www/uremote_dashboard/media/"
+    STATIC_ROOT = "/var/www/uremote_dashboard/static/"
 
 STATICFILES_DIRS = [
-    # BASE_DIR / "media",
-    BASE_DIR / "static/styles",
-    # BASE_DIR / "node_modules",
-    # "E:\__reports",
-    # '/var/www/static/',
+    # BASE_DIR / "static/styles",
 ]
 
 STATIC_URL = '/static/'
@@ -178,3 +178,14 @@ RECAPTCHA_PRIVATE_KEY = '6LfakhUiAAAAAHbXVCOp6vDc_DLJ3aJ4MujgXfMn'
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = "Europe/Berlin"
+CELERY_ALWAYS_EAGER = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

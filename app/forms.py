@@ -1,16 +1,21 @@
 import os
 import platform
+from time import sleep
 
 from django.contrib import messages
 from django import forms
+from django.core.mail import send_mail
 from django.forms import TextInput
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 
 from dashboard_racks import settings
 from .models import Rack, SshConfig, ReportConfig
+from .tasks import write_log_file
+from .widgets import TimePickerInput
 
 REPORT_STATUS = (('PASSED', 'Passed'), ('ERROR', 'Failed'), ('ALL', 'All'))
+
 
 class ReportFilterForm(forms.Form):
     result = forms.ChoiceField(
@@ -32,7 +37,7 @@ class CreateRackForm(forms.ModelForm):
 
     class Meta:
         model = Rack
-        fields = ['name', ]
+        fields = ['name']
 
     def __str__(self):
         return "CreateRackForm"
@@ -105,11 +110,13 @@ class CreateReportConfigForm(forms.ModelForm):
             attrs={'class': 'form-control'},
         ))
 
-
-
     class Meta:
         model = ReportConfig
-        fields = ['remote_report_path',  ]
+        fields = ['remote_report_path', 'pull_reports_time']
+
+        widgets = {
+            'pull_reports_time': TimePickerInput(),
+        }
 
     def __str__(self):
         return "CreateReportConfigForm"
@@ -118,3 +125,22 @@ class CreateReportConfigForm(forms.ModelForm):
 class UpdateReportConfigForm(CreateReportConfigForm):
     def __str__(self):
         return "UpdateReportConfigForm"
+
+
+class FeedbackForm(forms.Form):
+    email = forms.EmailField(label="Email Address")
+    message = forms.CharField(
+        label="Message", widget=forms.Textarea(attrs={"rows": 5})
+    )
+
+    def send_email(self):
+        """Sends an email when the feedback form has been submitted."""
+        write_log_file.apply_async(args=[self.cleaned_data["email"], self.cleaned_data['message']])
+
+        # send_mail(
+        #     "Your Feedback",
+        #     f"\t{self.cleaned_data['message']}\n\nThank you!",
+        #     "support@example.com",
+        #     [self.cleaned_data["email"]],
+        #     fail_silently=False,
+        # )

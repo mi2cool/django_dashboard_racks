@@ -5,6 +5,7 @@ from django.db import models
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django_celery_beat.models import CrontabSchedule
 
 from dashboard_racks import settings
 
@@ -26,7 +27,19 @@ class ReportConfig(models.Model):
         max_length=254,
         default='~/'
     )
+    from django_celery_beat.models import PeriodicTasks
 
+    pull_reports_time = models.TimeField(
+        verbose_name='Pull reports time',
+        null=True
+    )
+
+    contrab_schedule = models.ForeignKey(
+        CrontabSchedule,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='report_config'
+    )
 
     def __str__(self):
         return 'Report Config'
@@ -124,3 +137,11 @@ class Report(models.Model):
 
     def get_absolute_url(self):
         return reverse_lazy('rack-detail', kwargs={'pk': self.pk, 'rack_pk': self.archive.rack.pk})
+
+
+class Watchtdog(models.Model):
+    name = models.CharField(
+        max_length=254,
+        null=True
+    )
+    counter = models.IntegerField()

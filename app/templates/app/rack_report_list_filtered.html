@@ -26,6 +26,8 @@
 
         <hr>
 
+        <p>Number of reports: {{ filterset.qs|length }}</p>
+
         <form action="{% url 'rack-reports-delete-selected' rack_pk=rack.pk %}?next={{ request.path|urlencode }}" method="post">{% csrf_token %}
             {#            <button type="submit" name="delete_selected" value="">#}
 

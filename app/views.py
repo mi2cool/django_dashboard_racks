@@ -8,13 +8,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import FormView, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django_celery_beat.models import PeriodicTasks, CrontabSchedule, PeriodicTask
 
 from dashboard_racks import settings
 from .filters import ReportFilter
 from .forms import CreateRackForm, UpdateRackForm, UpdateSshConfigForm, UpdateReportConfigForm, ReportFilterForm
 from .models import Rack, SshConfig, ReportConfig, Report
 from .utils.paramiko_wrapper import SftpApi, sftp_instances, get_sftp_instance_by_hostname
-
+from .tasks import print_message
 from collections import namedtuple
 
 
@@ -28,7 +29,7 @@ class FilteredListView(ListView):
         # Then use the query parameters and the queryset to
         # instantiate a filterset and save it as an attribute
         # on the view instance for later.
-        self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        self.filterset = self.filterset_class(self.request.GET, queryset=queryset, request=self.request)
         # Return the filtered queryset
         return self.filterset.qs.distinct()
 
@@ -42,6 +43,11 @@ class FilteredListView(ListView):
 def index(request):
     context = {}
     # return render(request, 'app/index.html', context)
+
+    import logging
+    log = logging.getLogger('mydjanog')
+    log.debug("THis is index")
+
     return redirect('rack-list')
 
 
@@ -97,6 +103,7 @@ class RackUpdateView(UpdateView):
             context['report_config_form'] = self.report_config_form_class(
                 initial={
                     'remote_report_path': rack.report_config.remote_report_path,
+                    'pull_reports_time': rack.report_config.pull_reports_time,
                 })
 
         return context
@@ -139,9 +146,28 @@ class RackUpdateView(UpdateView):
 
         # validate
         if form.is_valid():
-            return self.form_valid(form)
+            return self._extracted_from_post_34(form)
         else:
             return self.form_invalid(**{form_name: form})
+
+    # TODO Rename this here and in `post`
+    def _extracted_from_post_34(self, form):
+        print_message.delay("Hello World")
+
+        if not self.object.report_config.contrab_schedule:
+            crontab = CrontabSchedule.objects.create()
+            periodic_task_obj = PeriodicTask.objects.create(name=f'periodict_task_{self.object}',
+                                                            task='pull_reports_task', crontab=crontab, enabled=True)
+            self.object.report_config.contrab_schedule = crontab
+        else:
+            crontab = self.object.report_config.contrab_schedule
+
+        crontab.minute = form.cleaned_data['pull_reports_time'].minute
+        crontab.hour = form.cleaned_data['pull_reports_time'].hour
+        crontab.save()
+        PeriodicTasks.update_changed()
+        self.object.report_config.save()
+        return self.form_valid(form)
 
 
 class RackDetailView(DetailView):
@@ -187,7 +213,8 @@ class RackDetailView(DetailView):
             context['remote_report_collection'] = remote_report_collection
 
         except Exception as ex:
-            messages.success(self.request, f"Failed to connect to {self.object.ssh_config.hostname}", extra_tags='danger')
+            messages.success(self.request, f"Failed to connect to {self.object.ssh_config.hostname}",
+                             extra_tags='danger')
             messages.success(self.request, f"Error message: {str(ex)}", extra_tags='danger')
 
         if reports:
@@ -278,3 +305,22 @@ class ReportDeleteView(DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('rack-report-list-filtered', kwargs={'rack_pk': self.kwargs.get('rack_pk')})
+
+
+from .forms import FeedbackForm
+from django.views.generic.edit import FormView
+from django.views.generic.base import TemplateView
+
+
+class FeedbackFormView(FormView):
+    template_name = "app/feedback.html"
+    form_class = FeedbackForm
+    success_url = "/success/"
+
+    def form_valid(self, form):
+        form.send_email()
+        return super().form_valid(form)
+
+
+class SuccessView(TemplateView):
+    template_name = "app/success.html"

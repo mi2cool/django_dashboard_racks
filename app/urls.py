@@ -13,6 +13,7 @@ urlpatterns = [
     path('rack/<int:pk>/detail', views.RackDetailView.as_view(), name='rack-detail'),
     path('rack/<int:pk>/delete', views.RackDeleteView.as_view(), name='rack-delete'),
     path('racks/', views.RackListView.as_view(), name='rack-list'),
+    path('index/', views.index, name='index'),
 
     # SSH CONFIG
     path('rack/<int:rack_pk>/ssh-config/create', views.SshConfigCreateView.as_view(), name='rack-sshconfig-create'),
@@ -29,4 +30,9 @@ urlpatterns = [
     path('rack/<int:rack_pk>/report/<int:pk>/delete/', views.ReportDeleteView.as_view(), name='rack-report-delete'),
     path('rack/<int:rack_pk>/reports/delete/selected/', api.delete_selected_reports, name='rack-reports-delete-selected'),
     path('rack/<int:rack_pk>/reports/filtered', views.ReportFilteredListView.as_view(), name='rack-report-list-filtered'),
+
+
+    # FEEDBACK
+    path('feedback/', views.FeedbackFormView.as_view(), name='feedback'),
+    path('success/', views.SuccessView.as_view(), name='success'),
 ]
