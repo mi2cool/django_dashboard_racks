@@ -29,6 +29,7 @@ def archive_reports(self, rack_pk):
     progress_recorder.set_progress(1, 3, description=f'Connect to {ssh_config.hostname}')
 
     ssh_config = rack.ssh_config
+
     report_config = rack.report_config
     archive, created = ReportArchive.objects.get_or_create(name=rack.name)
     if not rack.archive:

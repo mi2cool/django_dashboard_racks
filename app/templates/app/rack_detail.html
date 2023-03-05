@@ -24,7 +24,6 @@
                         <div class="col">{{ rack.report_config.remote_report_path }}</div>
                     </div>
                 </div>
-
             </div>
 
             {% include 'includes/report_pie_chart.html' with n_absolute=remote_report_collection|length n_failed=remote_reports_failed n_passed=remote_reports_passed title='RemoteReports' %}
