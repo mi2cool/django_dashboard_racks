@@ -1,4 +1,5 @@
 import os
+import time
 from collections import namedtuple
 
 from celery import Celery, shared_task
@@ -48,6 +49,8 @@ app.autodiscover_tasks()
 
 @app.task
 def test(arg='test'):
+    print(arg + '3')
+    time.sleep(30)
 
     with open("/home/micha/webapps/dashboard_rackz/aaaa.txt", 'w') as my_file:
         my_file.write("Hallo")

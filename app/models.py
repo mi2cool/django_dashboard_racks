@@ -13,9 +13,9 @@ from dashboard_racks import settings
 class SshConfig(models.Model):
     hostname = models.CharField(_("Hostname"), max_length=254, default='<hostname>')
     username = models.CharField(_("Username"), max_length=128, null=True)
-    password = models.CharField(_("Password"), max_length=128, null=True)
-    private_key = models.FileField(_('Private key'), null=True)
-    port = models.BigIntegerField(_("Port"), default=21)
+    password = models.CharField(_("Password"), max_length=128, null=True, blank=True)
+    private_key = models.FileField(_('Private key'), null=True, blank=True)
+    port = models.BigIntegerField(_("Port"), default=22)
 
     def __str__(self):
         return self.hostname
@@ -25,20 +25,22 @@ class ReportConfig(models.Model):
     remote_report_path = models.CharField(
         verbose_name=_('remote report path'),
         max_length=254,
-        default='~/'
+        default='/home/admin/',
     )
     from django_celery_beat.models import PeriodicTasks
 
     pull_reports_time = models.TimeField(
         verbose_name='Pull reports time',
-        null=True
+        null=True,
+        blank=True
     )
 
     contrab_schedule = models.ForeignKey(
         CrontabSchedule,
         on_delete=models.CASCADE,
         null=True,
-        related_name='report_config'
+        related_name='report_config',
+        blank=True
     )
 
     def __str__(self):
@@ -51,20 +53,23 @@ class Rack(models.Model):
         'SshConfig',
         on_delete=models.CASCADE,
         verbose_name='SSH/SFTP configuration',
-        null=True
+        null=True,
+        blank=True
     )
     report_config = models.ForeignKey(
         'ReportConfig',
         on_delete=models.CASCADE,
         verbose_name='Report configuration',
-        null=True
+        null=True,
+        blank=True
     )
     archive = models.ForeignKey(
         'ReportArchive',
         on_delete=models.CASCADE,
         verbose_name='Archive',
         null=True,
-        related_name='rack'
+        related_name='rack',
+        blank=True
     )
 
     def get_absolute_url(self):

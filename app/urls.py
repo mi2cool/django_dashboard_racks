@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from xml.etree.ElementInclude import include
+
+from django.template.defaulttags import url
 from django.urls import path, re_path
 from . import auth_views, views, api
 
@@ -6,6 +9,11 @@ urlpatterns = [
     # path('', auth_views.index, name='index'),
     path('', views.index, name='index'),
     path('home/', auth_views.index, name='home'),
+
+
+    # PLAY
+    path('rack/<int:pk>/reports/pull', views.rack_reports_pull, name='rack-reports-pull'),
+
 
     # RACK
     path('rack/create', views.RackCreateView.as_view(), name='rack-create'),

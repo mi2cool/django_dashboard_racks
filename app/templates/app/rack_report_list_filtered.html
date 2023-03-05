@@ -28,7 +28,8 @@
 
         <p>Number of reports: {{ filterset.qs|length }}</p>
 
-        <form action="{% url 'rack-reports-delete-selected' rack_pk=rack.pk %}?next={{ request.path|urlencode }}" method="post">{% csrf_token %}
+        <form action="{% url 'rack-reports-delete-selected' rack_pk=rack.pk %}?next={{ request.path|urlencode }}" method="post">
+            {% csrf_token %}
             {#            <button type="submit" name="delete_selected" value="">#}
 
             <button type="submit" class="btn btn-danger"><i class="fa-sharp fa-solid fa-trash "></i> Remove</button>
@@ -45,7 +46,7 @@
                 </tr>
                 </thead>
 
-                {% for report in filterset.qs %}
+                {% for report in object_list %}
                     <tr class="{% if report.result == "FAILED" %}table-danger{% endif %} ">
 
                         <td><input type="checkbox" name="cb_report_{{ report.pk }}"></td>
@@ -60,6 +61,8 @@
                     </tr>
                 {% endfor %}
             </table>
+
+            {% include "includes/pagination.html" with objects=filterset.qs %}
 
         </form>
 

@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-8)gy71r^#+6ritrnunl0ho84rzg*^ff1f)1n6ypae2dy+5va*(
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
-if platform.system() != "Linux":
+if platform.system() != "Linux" or True :
     LOCAL_FILE_DIR = "C:\\"
     DEBUG = True
 else:
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'django_celery_beat',
+    'celery_progress',
 
     'app.apps.AppConfig',
 
@@ -129,7 +130,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-if DEBUG:
+if DEBUG and False:
     app_pw = 'qajxodzplbodzmom'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
@@ -139,7 +140,8 @@ else:
     STATIC_ROOT = "/var/www/uremote_dashboard/static/"
 
 STATICFILES_DIRS = [
-    # BASE_DIR / "static/styles",
+    os.path.join(BASE_DIR, "frontend/static"),
+
 ]
 
 STATIC_URL = '/static/'
@@ -176,7 +178,6 @@ RECAPTCHA_PUBLIC_KEY = '6LfakhUiAAAAANEwt3yqV4ukFmh_B_RUtFKtTgcJ'
 RECAPTCHA_PRIVATE_KEY = '6LfakhUiAAAAAHbXVCOp6vDc_DLJ3aJ4MujgXfMn'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-
 
 # Celery settings
 CELERY_BROKER_URL = "redis://localhost:6379"

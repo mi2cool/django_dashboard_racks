@@ -1,9 +1,11 @@
+import json
 import os
 
+from celery.result import AsyncResult
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import FormView, DetailView, ListView
@@ -15,7 +17,7 @@ from .filters import ReportFilter
 from .forms import CreateRackForm, UpdateRackForm, UpdateSshConfigForm, UpdateReportConfigForm, ReportFilterForm
 from .models import Rack, SshConfig, ReportConfig, Report
 from .utils.paramiko_wrapper import SftpApi, sftp_instances, get_sftp_instance_by_hostname
-from .tasks import print_message
+from .tasks import print_message, archive_reports
 from collections import namedtuple
 
 
@@ -146,28 +148,53 @@ class RackUpdateView(UpdateView):
 
         # validate
         if form.is_valid():
-            return self._extracted_from_post_34(form)
+            return self.form_valid(form)
         else:
             return self.form_invalid(**{form_name: form})
 
-    # TODO Rename this here and in `post`
-    def _extracted_from_post_34(self, form):
-        print_message.delay("Hello World")
 
-        if not self.object.report_config.contrab_schedule:
-            crontab = CrontabSchedule.objects.create()
-            periodic_task_obj = PeriodicTask.objects.create(name=f'periodict_task_{self.object}',
-                                                            task='pull_reports_task', crontab=crontab, enabled=True)
-            self.object.report_config.contrab_schedule = crontab
-        else:
-            crontab = self.object.report_config.contrab_schedule
+def init_rack_detail_view(request, context, rack):
+    reports = []
+    ssh_config: SshConfig = rack.ssh_config
+    report_config: ReportConfig = rack.report_config
 
-        crontab.minute = form.cleaned_data['pull_reports_time'].minute
-        crontab.hour = form.cleaned_data['pull_reports_time'].hour
-        crontab.save()
-        PeriodicTasks.update_changed()
-        self.object.report_config.save()
-        return self.form_valid(form)
+    sftp_api = get_sftp_instance_by_hostname(
+        hostname=ssh_config.hostname,
+        username=ssh_config.username,
+        password=ssh_config.password,
+        private_key=ssh_config.private_key.path if ssh_config.private_key else '',
+        port=ssh_config.port,
+    )
+
+    try:
+        if not sftp_api.is_connected:
+            sftp_api.connect()
+
+        sftp = sftp_api.get_sftp()
+        reports = [x for x in sftp.listdir(rack.report_config.remote_report_path) if x.endswith('.html')]
+
+        remote_report_collection = []
+        Report = namedtuple('report', ['name', 'tag'])
+        _err_cnt = 0
+        for r in reports:
+            _tag = 'success'
+            if 'error' in r.lower():
+                _tag = 'danger'
+                _err_cnt += 1
+            remote_report_collection.append(Report(r, _tag))
+
+        context['remote_reports_failed'] = _err_cnt
+        context['remote_reports_passed'] = len(remote_report_collection) - _err_cnt
+        context['remote_report_collection'] = remote_report_collection
+
+    except Exception as ex:
+        messages.success(request, f"Failed to connect to {rack.ssh_config.hostname}",
+                         extra_tags='danger')
+        messages.success(request, f"Error message: {str(ex)}", extra_tags='danger')
+
+    if reports:
+        context['reports'] = reports
+    return context
 
 
 class RackDetailView(DetailView):
@@ -178,53 +205,27 @@ class RackDetailView(DetailView):
         return super(RackDetailView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        reports = []
-        context = super(RackDetailView, self).get_context_data()
-        ssh_config: SshConfig = self.object.ssh_config
-        report_config: ReportConfig = self.object.report_config
-
-        sftp_api = get_sftp_instance_by_hostname(
-            hostname=ssh_config.hostname,
-            username=ssh_config.username,
-            password=ssh_config.password,
-            private_key=ssh_config.private_key.path if ssh_config.private_key else '',
-            port=ssh_config.port,
+        context = init_rack_detail_view(
+            request=self.request,
+            context=super().get_context_data(**kwargs),
+            rack=self.object
         )
 
-        try:
-            if not sftp_api.is_connected:
-                sftp_api.connect()
+        if '_pull_reports' in self.request.GET:
+            # result = archive_reports(self.object.pk)  # asymc with celery
+            result = archive_reports.delay(self.object.pk)  # asymc with celery
+            context['task_id'] = result.task_id
 
-            sftp = sftp_api.get_sftp()
-            reports = [x for x in sftp.listdir(self.object.report_config.remote_report_path) if x.endswith('.html')]
-
-            remote_report_collection = []
-            Report = namedtuple('report', ['name', 'tag'])
-            _err_cnt = 0
-            for r in reports:
-                _tag = 'success'
-                if 'error' in r.lower():
-                    _tag = 'danger'
-                    _err_cnt += 1
-                remote_report_collection.append(Report(r, _tag))
-
-            context['remote_reports_failed'] = _err_cnt
-            context['remote_reports_passed'] = len(remote_report_collection) - _err_cnt
-            context['remote_report_collection'] = remote_report_collection
-
-        except Exception as ex:
-            messages.success(self.request, f"Failed to connect to {self.object.ssh_config.hostname}",
-                             extra_tags='danger')
-            messages.success(self.request, f"Error message: {str(ex)}", extra_tags='danger')
-
-        if reports:
-            context['reports'] = reports
         return context
 
 
 class RackListView(ListView):
     model = Rack
     template_name = "app/rack_list.html"
+
+    def get(self, request, *args, **kwargs):
+        _get = super().get(request, *args, **kwargs)
+        return _get
 
 
 class RackDeleteView(DeleteView):
@@ -278,7 +279,7 @@ class ReportFilteredListView(FilteredListView):
     model = Report
     filterset_class = ReportFilter
     template_name = "app/rack_report_list_filtered.html"
-    paginate_by = 250
+    paginate_by = 50
 
     def get_context_data(self, **kwargs):
         context = super(ReportFilteredListView, self).get_context_data(**kwargs)
@@ -324,3 +325,15 @@ class FeedbackFormView(FormView):
 
 class SuccessView(TemplateView):
     template_name = "app/success.html"
+
+
+def rack_reports_pull(request, pk):
+    result = archive_reports.delay(pk)  # asymc with celery
+    print(f"Pull reports of rack: {pk}")
+
+    return render(request, 'app/display_progress.html', context={'task_id': result.task_id})
+
+#
+# def progress_view(request):
+#     result = my_task.delay(10)
+#     return render(request, 'display_progress.html', context={'task_id': result.task_id})

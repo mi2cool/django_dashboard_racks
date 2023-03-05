@@ -25,6 +25,8 @@ def delete_selected_reports(request, rack_pk):
         if prefix in k and v == 'on':
             pk = int(k.replace(prefix, ''))
             report = Report.objects.get(pk=pk)
+            if os.path.exists(report.file.path):
+                os.remove(report.file.path)
             reports.append(report)
 
     for report in reports:

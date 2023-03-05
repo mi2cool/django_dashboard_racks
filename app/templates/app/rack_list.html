@@ -1,81 +1,145 @@
 {% extends "wrapper/list_view.html" %}
 
-{% block standard_list_head_title %}Create {{ object.name }}{% endblock %}
+{% block standard_list_head_title %}List of Racks | Dashboard u-remote{% endblock %}
 
 {% block standard_list_content %}
 
-    <div class="container overflow-hidden text-left">
+    <div class="text-center">
+        <p class="display-6 fw-bold">List of Racks</p>
+        <p class="lead">A list of all configured racks.</p>
+    </div>
 
-        <div class="row">
+    {% for rack in object_list %}
 
-            <div class="col-sm-5">
+        <div class="container-xxl border rounded shadow my-4">
 
-                <div class="row g-2">
+            <p class="lead p-2 fw-bold mb-0">{{ rack.name }}</p>
+            <hr class="my-0">
 
-                    <p class="display-4">Racks</p>
+            <div class="row">
+                <div class="p-4 col-6 lead">
+                    <div class="row">
+                        <div class="col">Hostname</div>
+                        <div class="col">{{ rack.ssh_config.hostname }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col">User</div>
+                        <div class="col">{{ rack.ssh_config.username }}</div>
+                    </div>
 
-                    <p class="lead">A list of all configured racks.</p>
+                    <div class="row">
+                        <div class="col">Remote report Path</div>
+                        <div class="col">{{ rack.report_config.remote_report_path }}</div>
+                    </div>
+                </div>
 
-                    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-success" aria-hidden="true"></i></a></p>
-
-                    {% for rack in object_list %}
-
-                        <div class="hstack gap-3 shadow-sm bg-light p-2 border border-light rounded">
-
-
-                            <input class="form-control me-auto" type="text" readonly placeholder="{{ rack.name }}">
-
-                            <a href="{% url 'rack-detail' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>
-                            <a href="{% url 'rack-update' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-pen text-primary"></i></a>
-                            <a href="{% url 'rack-delete' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-trash text-danger"></i></a>
-                        </div>
-
-                    {% empty %}
-                        <p>No racks yet.</p>
-                    {% endfor %}
-
-
+                <div class="col-6">
+                    {% include 'includes/report_pie_chart.html' with n_absolute=rack.archive.reports.all|length n_failed=rack.archive.get_number_of_failed n_passed=rack.archive.get_number_of_passed title=rack %}
                 </div>
             </div>
 
-            <div class="col">
+            <hr class="my-0">
 
-                <p class="display-4">Allover testresults...</p>
+            <div class="d-flex justify-content-end">
+                <a class="btn btn-dark m-2" href="{% url 'rack-detail' rack.pk %}">Remote Reports</a>
+                <a class="btn btn-outline-dark m-2" href="{% url 'rack-report-list-filtered' rack.pk %}">Report archive</a>
 
-                <p class="lead">Include block diagram of all racks</p>
-
-
-                <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
-
-                <script>
-                    var xValues = ["UR20-FBC-EIP", "UR20-FBC-EIP-ECO", "UR20-FBC-EIP-V2", "UR20-FBC-MOD", "UR20-FBC-MOD-ECO"];
-                    var yValues = [55, 49, 44, 24, 15];
-                    var barColors = ["red", "green", "blue", "orange", "brown"];
-
-                    new Chart("myChart", {
-                        type: "bar",
-                        data: {
-                            labels: xValues,
-                            datasets: [{
-                                backgroundColor: barColors,
-                                data: yValues
-                            }]
-                        },
-                        options: {
-                            legend: {display: false},
-                            title: {
-                                display: true,
-                                text: "Absolute numbers of test cases."
-                            }
-                        }
-                    });
-                </script>
-
+                {% if request.user.is_authenticated %}
+                    <button class="btn btn-outline-dark m-2" href="#">Edit</button>
+                {% endif %}
 
             </div>
         </div>
 
+    {% empty %}
+        <p>No racks yet.</p>
+    {% endfor %}
 
-    </div>
+
+
+
+
+    {#    <div class="row px-4 overflow-hidden text-left">#}
+    {##}
+    {#        <div class="row">#}
+    {##}
+    {#            <div class="col-sm-10">#}
+    {##}
+    {#                <div class="row g-2">#}
+    {##}
+    {#                    <p class="display-4">Racks</p>#}
+    {##}
+    {#                    <p class="lead">A list of all configured racks.</p>#}
+    {##}
+    {#                    <p><a href="{% url 'rack-create' %}"><i class="fa fa-plus fa-lg text-success"#}
+    {#                                                            aria-hidden="true"></i></a></p>#}
+    {##}
+    {#                    {% for rack in object_list %}#}
+    {##}
+    {#                        <div class="hstack gap-3 shadow-sm bg-light p-2 border border-light rounded">#}
+    {##}
+    {##}
+    {#                            <input class="form-control me-auto" type="text" readonly placeholder="{{ rack.name }}">#}
+    {##}
+    {#                            <a href="{% url 'rack-detail' pk=rack.pk %}"><i#}
+    {#                                    class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>#}
+    {#                            <a href="{% url 'rack-update' pk=rack.pk %}"><i#}
+    {#                                    class="fa-sharp fa-solid fa-pen text-primary"></i></a>#}
+    {#                            <a href="{% url 'rack-delete' pk=rack.pk %}"><i#}
+    {#                                    class="fa-sharp fa-solid fa-trash text-danger"></i></a>#}
+    {#                        </div>#}
+    {##}
+    {#                    {% empty %}#}
+    {#                        <p>No racks yet.</p>#}
+    {#                    {% endfor %}#}
+    {##}
+    {##}
+    {#                </div>#}
+    {#            </div>#}
+    {##}
+    {#            <div class="col">#}
+    {##}
+    {#                <p class="display-4">Allover testresults...</p>#}
+    {##}
+    {#                <p class="lead">Include block diagram of all racks</p>#}
+    {##}
+    {##}
+    {#                <canvas id="myChart" style="width:100%;max-width:600px"></canvas>#}
+    {##}
+    {#                <script>#}
+    {#                    var xValues = ["UR20-FBC-EIP", "UR20-FBC-EIP-ECO", "UR20-FBC-EIP-V2", "UR20-FBC-MOD", "UR20-FBC-MOD-ECO"];#}
+    {#                    var yValues = [55, 49, 44, 24, 15];#}
+    {#                    var barColors = ["red", "green", "blue", "orange", "brown"];#}
+    {##}
+    {#                    new Chart("myChart", {#}
+    {#                        type: "bar",#}
+    {#                        data: {#}
+    {#                            labels: xValues,#}
+    {#                            datasets: [{#}
+    {#                                backgroundColor: barColors,#}
+    {#                                data: yValues#}
+    {#                            }]#}
+    {#                        },#}
+    {#                        options: {#}
+    {#                            legend: {display: false},#}
+    {#                            title: {#}
+    {#                                display: true,#}
+    {#                                text: "Absolute numbers of test cases."#}
+    {#                            }#}
+    {#                        }#}
+    {#                    });#}
+    {#                </script>#}
+    {##}
+    {##}
+    {#            </div>#}
+    {#        </div>#}
+    {##}
+    {##}
+    {#        <div class="row border">#}
+    {#            abc#}
+    {#        </div>#}
+    {##}
+    {##}
+    {#    </div>#}
 
 {% endblock %}
