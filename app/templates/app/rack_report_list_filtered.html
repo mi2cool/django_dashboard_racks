@@ -19,7 +19,9 @@
 {% block body_content %}
     <div class="col-md-8 offset-md-2 shadow-lg p-4">
         <p class="display-4">Archive Report List</p>
-        <p class="lead">A filtered list of all archived report of <a class="link-dark" href="{% url 'rack-detail' rack.pk %}">{{ rack }}</a>.</p>
+        <p class="lead">A filtered list of all archived report of <a class="link-dark"
+                                                                     href="{% url 'rack-detail' rack.pk %}">{{ rack }}</a>.
+        </p>
 
         <hr>
 
@@ -36,7 +38,8 @@
 
             <div class="d-flex justify-content-start">
                 <button class="btn btn-outline-danger mx-2"
-                        type="submit" ><i class="fa-sharp fa-solid fa-trash "></i> Remove selected</button>
+                        type="submit"><i class="fa-sharp fa-solid fa-trash "></i> Remove selected
+                </button>
 
                 <a class="btn btn-danger mx-2"
                    href="{% url 'rack-reports-delete-all' rack.pk %}">
@@ -69,13 +72,19 @@
                         <td>{{ report.created|date:"Y.m.d" }} {{ report.created|time:"G:i:s" }}</td>
 
                         <td {% if report.verdict == 'PASSED' %}
-                            class="fw-bold text-success"
+                            class="fw-bold text-success fs-5"
                         {% elif report.verdict == 'FAILED' %}
-                            class="fw-bold text-danger"
+                            class="fw-bold text-danger fs-5"
                         {% else %}
-                            class="fw-bold"
+                            class="fw-bold fs-5"
                         {% endif %} >
-                            {{ report.verdict }}
+                            {% if report.verdict == 'PASSED' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% elif report.verdict == 'FAILED' %}
+                                <i class="fa-sharp fa-solid fa-circle-xmark"></i>
+                            {% else %}
+                                {{ report.verdict }}
+                            {% endif %}
                         </td>
                         {#                        <td>#}
                         {#                            <a class="btn btn-outline-dark" href="{% url 'rack-report-detail' rack_pk=rack.pk pk=report.pk %}"><i class="fa-sharp fa-solid fa-chart-line "></i> Details</a>#}
