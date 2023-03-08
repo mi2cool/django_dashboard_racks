@@ -3,10 +3,10 @@
 
         <a class="navbar-brand fw-bolder text-dark " href="/home/"><b></b>u-test | u-remote dashboard</a>
 
-{#        <form class="d-inline-flex" role="search">#}
-{#            <input class="form-control me-2 w-75" type="search" placeholder="Search" aria-label="Search">#}
-{#            <button class="btn btn-outline-success" type="submit">Search</button>#}
-{#        </form>#}
+        {#        <form class="d-inline-flex" role="search">#}
+        {#            <input class="form-control me-2 w-75" type="search" placeholder="Search" aria-label="Search">#}
+        {#            <button class="btn btn-outline-success" type="submit">Search</button>#}
+        {#        </form>#}
 
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
                 aria-controls="offcanvasNavbar">
@@ -32,7 +32,8 @@
                     </li>
 
                     {% if user.is_authenticated %}
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
                             User ({{ user.username }})
                         </a>
                         <ul class="dropdown-menu">
@@ -48,9 +49,15 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">Login</a>
                         </li>
+
+
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'user-register' %}">Register</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/">Admin</a>
                     </li>
 
                     <hr>
@@ -59,7 +66,13 @@
                         <i class="fa fa-user-circle" aria-hidden="true"></i> <b>Racks</b>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rack-create' %}">Create</a>
+                    </li>
+
                 </ul>
+
+
             </div>
         </div>
     </div>

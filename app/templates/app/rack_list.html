@@ -31,6 +31,11 @@
                         <div class="col">Remote report Path</div>
                         <div class="col">{{ rack.report_config.remote_report_path }}</div>
                     </div>
+
+                    <div class="row">
+                        <div class="col">Last report</div>
+                        <div class="col">{{ rack.archive.get_latest_report }}</div>
+                    </div>
                 </div>
 
                 <div class="col-6">
@@ -42,10 +47,11 @@
 
             <div class="d-flex justify-content-end">
                 <a class="btn btn-dark m-2" href="{% url 'rack-detail' rack.pk %}">Remote Reports</a>
-                <a class="btn btn-outline-dark m-2" href="{% url 'rack-report-list-filtered' rack.pk %}">Report archive</a>
+                <a class="btn btn-outline-dark m-2" href="{% url 'rack-report-list-filtered' rack.pk %}">Report
+                    archive</a>
 
                 {% if request.user.is_authenticated %}
-                    <button class="btn btn-outline-dark m-2" href="#">Edit</button>
+                    <a class="btn btn-outline-dark m-2" href="{% url 'rack-update' rack.pk %}">Edit</a>
                 {% endif %}
 
             </div>

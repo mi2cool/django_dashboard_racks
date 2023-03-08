@@ -11,7 +11,6 @@ from dashboard_racks import settings
 from .models import Rack, ReportArchive, Report
 from .utils.paramiko_wrapper import SftpApi, get_sftp_instance_by_hostname
 
-
 sftp = None
 sftp_api = None
 
@@ -87,7 +86,8 @@ def archive_reports(request, rack_pk):
             os.remove(r)
         report.save()
 
-    messages.success(request, f'Moved {n_moved_files} files from {ssh_config.hostname} to archive.', extra_tags='success')
+    messages.success(request, f'Moved {n_moved_files} files from {ssh_config.hostname} to archive.',
+                     extra_tags='success')
 
     next = request.GET.get('next', '/')
     return HttpResponseRedirect(next)

@@ -19,20 +19,30 @@
 {% block body_content %}
     <div class="col-md-8 offset-md-2 shadow-lg p-4">
         <p class="display-4">Archive Report List</p>
-        <p class="lead">A filtered list of all archived report of {{ rack }}.</p>
+        <p class="lead">A filtered list of all archived report of <a class="link-dark" href="{% url 'rack-detail' rack.pk %}">{{ rack }}</a>.</p>
 
         <hr>
+
         {% include 'includes/filter_form_label_input_inline.html' with form=filterset.form title='report filter' id=0 %}
 
         <hr>
 
         <p>Number of reports: {{ filterset.qs|length }}</p>
 
-        <form action="{% url 'rack-reports-delete-selected' rack_pk=rack.pk %}?next={{ request.path|urlencode }}" method="post">
+        <form action="{% url 'rack-reports-delete-selected' rack_pk=rack.pk %}?next={{ request.path|urlencode }}"
+              method="post">
             {% csrf_token %}
             {#            <button type="submit" name="delete_selected" value="">#}
 
-            <button type="submit" class="btn btn-danger"><i class="fa-sharp fa-solid fa-trash "></i> Remove</button>
+            <div class="d-flex justify-content-start">
+                <button class="btn btn-outline-danger mx-2"
+                        type="submit" ><i class="fa-sharp fa-solid fa-trash "></i> Remove selected</button>
+
+                <a class="btn btn-danger mx-2"
+                   href="{% url 'rack-reports-delete-all' rack.pk %}">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Remove all</a>
+            </div>
+
 
             <table class="table table-striped">
 
@@ -40,9 +50,10 @@
                 <tr>
                     <th><input type="checkbox" id="selectAll"></th>
                     <th scope="col">Report</th>
-                    <th scope="col">Result</th>
                     <th scope="col">Created</th>
-                    <th scope="col">Action</th>
+                    <th scope="col">Result</th>
+
+                    {#                    <th scope="col">Actions</th>#}
                 </tr>
                 </thead>
 
@@ -50,13 +61,26 @@
                     <tr class="{% if report.result == "FAILED" %}table-danger{% endif %} ">
 
                         <td><input type="checkbox" name="cb_report_{{ report.pk }}"></td>
-                        <td>{{ report.name }}</td>
-                        <td>{{ report.verdict }}</td>
-                        <td>{{ report.created|date:"Y.m.d" }} {{ report.created|time:"G:i:s" }}</td>
                         <td>
-                            <a href="{% url 'rack-report-detail' rack_pk=rack.pk pk=report.pk %}"><i class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>
-                            <a href="{% url 'rack-report-delete' rack_pk=rack.pk pk=report.pk %}"><i class="fa-sharp fa-solid fa-trash text-danger"></i></a>
+                            <a class="link-dark"
+                               href="{% url 'rack-report-detail' rack_pk=rack.pk pk=report.pk %}">{{ report.name }}</a>
                         </td>
+
+                        <td>{{ report.created|date:"Y.m.d" }} {{ report.created|time:"G:i:s" }}</td>
+
+                        <td {% if report.verdict == 'PASSED' %}
+                            class="fw-bold text-success"
+                        {% elif report.verdict == 'FAILED' %}
+                            class="fw-bold text-danger"
+                        {% else %}
+                            class="fw-bold"
+                        {% endif %} >
+                            {{ report.verdict }}
+                        </td>
+                        {#                        <td>#}
+                        {#                            <a class="btn btn-outline-dark" href="{% url 'rack-report-detail' rack_pk=rack.pk pk=report.pk %}"><i class="fa-sharp fa-solid fa-chart-line "></i> Details</a>#}
+                        {#                            <a class="btn btn-danger" href="{% url 'rack-report-delete' rack_pk=rack.pk pk=report.pk %}"><i class="fa-sharp fa-solid fa-trash"></i> Delete</a>#}
+                        {#                        </td>#}
 
                     </tr>
                 {% endfor %}

@@ -112,11 +112,7 @@ class CreateReportConfigForm(forms.ModelForm):
 
     class Meta:
         model = ReportConfig
-        fields = ['remote_report_path', 'pull_reports_time']
-
-        widgets = {
-            'pull_reports_time': TimePickerInput(),
-        }
+        fields = ['remote_report_path', ]
 
     def __str__(self):
         return "CreateReportConfigForm"
@@ -125,22 +121,3 @@ class CreateReportConfigForm(forms.ModelForm):
 class UpdateReportConfigForm(CreateReportConfigForm):
     def __str__(self):
         return "UpdateReportConfigForm"
-
-
-class FeedbackForm(forms.Form):
-    email = forms.EmailField(label="Email Address")
-    message = forms.CharField(
-        label="Message", widget=forms.Textarea(attrs={"rows": 5})
-    )
-
-    def send_email(self):
-        """Sends an email when the feedback form has been submitted."""
-        write_log_file.apply_async(args=[self.cleaned_data["email"], self.cleaned_data['message']])
-
-        # send_mail(
-        #     "Your Feedback",
-        #     f"\t{self.cleaned_data['message']}\n\nThank you!",
-        #     "support@example.com",
-        #     [self.cleaned_data["email"]],
-        #     fail_silently=False,
-        # )

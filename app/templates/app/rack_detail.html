@@ -49,7 +49,8 @@
 
         {% else %}
             <div class="text-center p-4">
-                <p class="lead alert alert-secondary">No reports available on {{ rack.ssh_config.hostname }} (rack of {{ rack.name }}).</p>
+                <p class="lead alert alert-secondary">No reports available on {{ rack.ssh_config.hostname }} (rack
+                    of {{ rack.name }}).</p>
             </div>
 
         {% endif %}
@@ -85,7 +86,10 @@
             </div>
 
         {% else %}
-            <p class="lead">No reports available in archive of {{ rack.name }}.</p>
+            <div class="text-center p-4">
+                <p class="lead alert alert-secondary">No reports in archive of {{ rack.name }}.</p>
+            </div>
+
         {% endif %}
 
     </div>

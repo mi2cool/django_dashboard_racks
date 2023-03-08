@@ -8,13 +8,12 @@
 
         <p class="display-4">{{ object.name }}</p>
 
-        <p class="lead">Details of the rack {{ object }}. </p>
+        <p class="lead">Details of the rack <a class="link-dark" href="{% url 'rack-detail' rack.pk %}">{{ object }}</a>. </p>
 
         <div class="my-2">
-            <a href="{% url 'rack-detail' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-chart-line text-dark"></i></a>
-            <a href="{% url 'rack-delete' pk=rack.pk %}"><i class="fa-sharp fa-solid fa-trash text-danger"></i></a>
+            <a href="{% url 'rack-detail' pk=rack.pk %}" class="btn btn-dark"><i class="fa-sharp fa-solid fa-chart-line "></i> Details</a>
+            <a href="{% url 'rack-delete' pk=rack.pk %}" class="btn btn-danger"><i class="fa-sharp fa-solid fa-trash"></i> Delete</a>
         </div>
-
 
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">

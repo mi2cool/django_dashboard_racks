@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block head_title %}
+    Reports | Delete all
+{% endblock %}
+
+{% block body_content %}
+
+    <div class="text-center mt-4">
+        <p class="display-6 fw-bold">Confirmation to remove all reports</p>
+        <p class="lead">When confirmed all reports of <a class="link-dark"
+                                                         href="{% url 'rack-detail' rack.pk %}">{{ rack }}</a> will be
+            deleted.</p>
+    </div>
+
+    <div class="container border rounded shadow my-4 col-6 p-4">
+        <p class="lead p-2 fw-bold mb-0">{{ rack.name }}</p>
+        <hr class="my-0">
+
+        <form class="my-2"
+              method="post">{% csrf_token %}
+            <p class="lead">Are you sure you want to delete all reports of "{{ rack }}"?</p>
+
+            <input type="hidden" name="delete_all_reports" id="id_delete_all_reports">
+
+            <div class="d-flex justify-content-evenly">
+                <input type="submit" value="Confirm" class="btn btn-danger">
+                <a class="btn btn-outline-dark"
+                   href="{% url 'rack-report-list-filtered' rack.pk %}">Cancel</a>
+            </div>
+
+
+        </form>
+
+    </div>
+{% endblock %}

@@ -12,7 +12,7 @@ urlpatterns = [
 
 
     # PLAY
-    path('rack/<int:pk>/reports/pull', views.rack_reports_pull, name='rack-reports-pull'),
+    # path('rack/<int:pk>/reports/pull', views.rack_reports_pull, name='rack-reports-pull'),
 
 
     # RACK
@@ -37,10 +37,7 @@ urlpatterns = [
     path('rack/<int:rack_pk>/report/<int:pk>/detail/', views.ReportDetailView.as_view(), name='rack-report-detail'),
     path('rack/<int:rack_pk>/report/<int:pk>/delete/', views.ReportDeleteView.as_view(), name='rack-report-delete'),
     path('rack/<int:rack_pk>/reports/delete/selected/', api.delete_selected_reports, name='rack-reports-delete-selected'),
+    path('rack/<int:rack_pk>/reports/delete/all/', views.rack_reports_delete_all, name='rack-reports-delete-all'),
     path('rack/<int:rack_pk>/reports/filtered', views.ReportFilteredListView.as_view(), name='rack-report-list-filtered'),
 
-
-    # FEEDBACK
-    path('feedback/', views.FeedbackFormView.as_view(), name='feedback'),
-    path('success/', views.SuccessView.as_view(), name='success'),
 ]

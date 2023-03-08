@@ -1,6 +1,5 @@
 import json
 import os
-
 from celery.result import AsyncResult
 from django.contrib import messages
 from django.http import HttpResponseRedirect, HttpResponse
@@ -10,7 +9,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import FormView, DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django_celery_beat.models import PeriodicTasks, CrontabSchedule, PeriodicTask
+from django.views.generic.edit import FormView
+from django.views.generic.base import TemplateView
+from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 from dashboard_racks import settings
 from .filters import ReportFilter
@@ -87,6 +88,7 @@ class RackUpdateView(UpdateView):
         if 'ssh_config_form' not in context:
             context['ssh_config_form'] = self.ssh_config_form_class(
                 initial={
+                    'name': f'rc_{rack.name}',
                     'hostname': rack.ssh_config.hostname,
                     'username': rack.ssh_config.username,
                     'password': rack.ssh_config.password,
@@ -98,14 +100,31 @@ class RackUpdateView(UpdateView):
         if 'report_config_form' not in context:
 
             if not rack.report_config:
-                rack.report_config = ReportConfig.objects.create()
+                rack.report_config = ReportConfig.objects.create(name=f"rc_{rack.name}")
+                rack.report_config.save()
+                rack.save()
+
+            if not rack.report_config.periodic_task:
+                schedule, created = IntervalSchedule.objects.get_or_create(
+                    every=30,
+                    period=IntervalSchedule.MINUTES,
+                )
+                pt = PeriodicTask.objects.create(
+                    interval=schedule,  # we created this above.
+                    name=f'pt_{rack.name}',  # simply describes this periodic task.
+                    task='archive_reports',  # name of task.
+                    kwargs=json.dumps({
+                        'rack_pk': rack.pk,
+                    }),
+                )
+                rack.report_config.periodic_task = pt
                 rack.report_config.save()
                 rack.save()
 
             context['report_config_form'] = self.report_config_form_class(
                 initial={
                     'remote_report_path': rack.report_config.remote_report_path,
-                    'pull_reports_time': rack.report_config.pull_reports_time,
+                    # 'pull_reports_time': rack.report_config.pull_reports_time,
                 })
 
         return context
@@ -308,32 +327,14 @@ class ReportDeleteView(DeleteView):
         return reverse_lazy('rack-report-list-filtered', kwargs={'rack_pk': self.kwargs.get('rack_pk')})
 
 
-from .forms import FeedbackForm
-from django.views.generic.edit import FormView
-from django.views.generic.base import TemplateView
+def rack_reports_delete_all(request, rack_pk):
+    rack = get_object_or_404(Rack, pk=rack_pk)
+    if request.POST:
+        for r in rack.archive.reports.all():
+            os.remove(r.file.path)
+            r.delete()
+            print(os.path.join(settings.MEDIA_ROOT, r.file.path))
 
+        return redirect('rack-report-list-filtered', rack_pk=rack_pk)
 
-class FeedbackFormView(FormView):
-    template_name = "app/feedback.html"
-    form_class = FeedbackForm
-    success_url = "/success/"
-
-    def form_valid(self, form):
-        form.send_email()
-        return super().form_valid(form)
-
-
-class SuccessView(TemplateView):
-    template_name = "app/success.html"
-
-
-def rack_reports_pull(request, pk):
-    result = archive_reports.delay(pk)  # asymc with celery
-    print(f"Pull reports of rack: {pk}")
-
-    return render(request, 'app/display_progress.html', context={'task_id': result.task_id})
-
-#
-# def progress_view(request):
-#     result = my_task.delay(10)
-#     return render(request, 'display_progress.html', context={'task_id': result.task_id})
+    return render(request, 'app/reports_confim_delete_all.html', context={'rack': rack})

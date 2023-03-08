@@ -55,6 +55,7 @@ class ReportFilter(FilterSet):
         rack = get_object_or_404(Rack, pk=self.request.resolver_match.kwargs.get('rack_pk', None))
 
         _qs = _qs.filter(archive_id=rack.archive.id)
+        _qs = _qs.order_by('created').reverse()
         return _qs
 
     def filter_created(self, qs: QuerySet, name, value):
