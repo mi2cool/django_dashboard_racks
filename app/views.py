@@ -216,26 +216,29 @@ def init_rack_detail_view(request, context, rack):
     return context
 
 
-class RackDetailView(DetailView):
-    model = Rack
-    template_name = "app/rack_detail.html"
+def rack_detail(request, pk):
+    rack = get_object_or_404(Rack, pk=pk)
 
-    def get(self, request, *args, **kwargs):
-        return super(RackDetailView, self).get(request, *args, **kwargs)
+    context = {
+        'rack': rack,
+        'spinner': True,
+    }
+    load_remote_reports = request.GET.get('load_remote_reports')
 
-    def get_context_data(self, **kwargs):
+    if load_remote_reports:
         context = init_rack_detail_view(
-            request=self.request,
-            context=super().get_context_data(**kwargs),
-            rack=self.object
+            request=request,
+            context=context,
+            rack=rack
         )
+        context['spinner'] = False
 
-        if '_pull_reports' in self.request.GET:
-            # result = archive_reports(self.object.pk)  # asymc with celery
-            result = archive_reports.delay(self.object.pk)  # asymc with celery
-            context['task_id'] = result.task_id
+    if '_pull_reports' in request.GET:
+        # result = archive_reports(self.object.pk)  # asymc with celery
+        result = archive_reports.delay(rack.pk)  # asymc with celery
+        context['task_id'] = result.task_id
 
-        return context
+    return render(request, "app/rack_detail.html", context)
 
 
 class RackListView(ListView):

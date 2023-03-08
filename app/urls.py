@@ -18,7 +18,8 @@ urlpatterns = [
     # RACK
     path('rack/create', views.RackCreateView.as_view(), name='rack-create'),
     path('rack/<int:pk>/update', views.RackUpdateView.as_view(), name='rack-update'),
-    path('rack/<int:pk>/detail', views.RackDetailView.as_view(), name='rack-detail'),
+    # path('rack/<int:pk>/detail', views.RackDetailView.as_view(), name='rack-detail'),
+    path('rack/<int:pk>/detail', views.rack_detail, name='rack-detail'),
     path('rack/<int:pk>/delete', views.RackDeleteView.as_view(), name='rack-delete'),
     path('racks/', views.RackListView.as_view(), name='rack-list'),
     path('index/', views.index, name='index'),

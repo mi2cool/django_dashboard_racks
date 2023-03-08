@@ -1,11 +1,25 @@
 {% extends "base.html" %}
 
-{% block head_title %}{{ object.name }} | Details {% endblock %}
+{% block head_title %}{{ rack.name }} | Details {% endblock %}
 
 {% block body_content %}
 
+    {% if spinner %}
+        <script>
+            $(document).ready(function () {
+                {#$.get("{{ request.path }}", {load_remote_reports: 1})#}
+                $('#myHiddenButton').click();
+            });
+        </script>
+
+        <form action="" method="get">
+            <input type="hidden" name="load_remote_reports" value="True">
+            <input type="submit" id="myHiddenButton" hidden="">
+        </form>
+    {% endif %}
+
     <div class="text-center">
-        <p class="display-6 fw-bold">Rack: {{ object }}</p>
+        <p class="display-6 fw-bold">Rack: {{ rack }}</p>
         <p class="lead">Overview over the available remote reports and archive.</p>
     </div>
 
@@ -46,29 +60,42 @@
                     </button>
                 </form>
             </div>
+        {% endif %}
 
-        {% else %}
-            <div class="text-center p-4">
-                <p class="lead alert alert-secondary">No reports available on {{ rack.ssh_config.hostname }} (rack
-                    of {{ rack.name }}).</p>
-            </div>
+
+        {% if not reports %}
+            {% if spinner %}
+
+                <div class="d-flex justify-content-center p-4">
+                    <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+            {% else %}
+
+                <div class="text-center p-4">
+                    <p class="lead alert alert-secondary">No reports available on {{ rack.ssh_config.hostname }} (rack
+                        of {{ rack.name }}).</p>
+                </div>
+
+            {% endif %}
 
         {% endif %}
 
+
     </div>
-
-
 
     <div class="container-xxl border rounded shadow my-4" style="min-height: 200px">
 
-        {#            <p class="display-6">Archive {{ object }} </p>#}
-        <p class="lead fw-bold mb-0 p-2">Archive of {{ object }}</p>
+        {#            <p class="display-6">Archive {{ rack }} </p>#}
+        <p class="lead fw-bold mb-0 p-2">Archive of {{ rack }}</p>
         <hr class="my-0">
 
-        {% if object.archive.reports %}
+        {% if rack.archive.reports %}
 
             <div class="col-md-auto offset-md-0 mt-0">
-                <p class="lead">Overview of the archive of the rack {{ object.name }}.</p>
+                <p class="lead">Overview of the archive of the rack {{ rack.name }}.</p>
             </div>
 
             {% include 'includes/report_pie_chart.html' with n_absolute=rack.archive.reports.all|length n_failed=rack.archive.get_number_of_failed n_passed=rack.archive.get_number_of_passed title='ArchiveReports' %}
@@ -76,7 +103,7 @@
             <hr>
 
             <div class="d-flex justify-content-end my-2">
-                <a href="{% url 'rack-report-list-filtered' rack_pk=object.pk %}"
+                <a href="{% url 'rack-report-list-filtered' rack_pk=rack.pk %}"
                    class="btn btn-dark"
                    data-bs-toggle="tooltip"
                    data-bs-placement="top"
@@ -93,5 +120,6 @@
         {% endif %}
 
     </div>
+
 
 {% endblock %}
